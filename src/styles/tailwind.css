@@ -1,0 +1,31 @@
+@import 'tailwindcss' source(none);
+@source '../**/*.{js,ts,jsx,tsx}';
+
+@import 'tw-animate-css';
+
+/* Custom utilities for EarsForYou */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .glassmorphic {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  .glow-primary {
+    box-shadow: 0 0 20px rgba(124, 92, 255, 0.3);
+  }
+  
+  .glow-accent {
+    box-shadow: 0 0 20px rgba(79, 209, 197, 0.3);
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, #7C5CFF 0%, #4FD1C5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}

@@ -80,7 +80,7 @@ export function HomeScreen() {
           <div className="grid grid-cols-2 gap-4">
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
               <GlassmorphicCard className="text-center">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 {loading ? <Skeleton className="h-8 w-12 mx-auto mb-1 bg-white/10" /> : <div className="text-3xl font-bold text-primary mb-1">{stats?.wellnessScore || 0}</div>}
@@ -132,7 +132,7 @@ export function HomeScreen() {
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { key: 'home_journal', path: '/journal', Icon: Sparkles, color: 'text-primary', bg: 'bg-primary/10', hover: 'hover:border-primary/50' },
-                  { key: 'home_insights', path: '/insights', Icon: TrendingUp, color: 'text-accent', bg: 'bg-accent/10', hover: 'hover:border-accent/50' },
+                  { key: 'home_insights', path: '/insights', Icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10', hover: 'hover:border-primary/50' },
                   { key: 'home_support', path: '/support', Icon: Heart, color: 'text-pink-500', bg: 'bg-pink-500/10', hover: 'hover:border-pink-500/50' },
                   { key: 'home_sos', path: '/sos', Icon: Focus, color: 'text-destructive', bg: 'bg-destructive/10', hover: 'hover:border-destructive/50' },
                 ].map(item => (

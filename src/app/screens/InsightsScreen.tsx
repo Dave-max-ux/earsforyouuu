@@ -97,6 +97,8 @@ export function InsightsScreen() {
           <button
             onClick={() => navigate('/home')}
             className="w-10 h-10 rounded-full bg-card/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-card/80 transition-all"
+            aria-label="Back to home"
+            title="Back"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -151,17 +153,17 @@ export function InsightsScreen() {
                         <Line
                           type="monotone"
                           dataKey="moodValue"
-                          stroke="var(--color-green-deep)"
+                          stroke="var(--color-blue-deep)"
                           strokeWidth={3}
-                          dot={{ fill: 'var(--color-green-deep)', r: 4 }}
+                          dot={{ fill: 'var(--color-blue-deep)', r: 4 }}
                           name="Mood"
                         />
                         <Line
                           type="monotone"
                           dataKey="energy"
-                          stroke="var(--color-green-mid)"
+                          stroke="var(--color-blue-mid)"
                           strokeWidth={2}
-                          dot={{ fill: 'var(--color-green-mid)', r: 3 }}
+                          dot={{ fill: 'var(--color-blue-mid)', r: 3 }}
                           name="Energy"
                         />
                       </LineChart>
@@ -202,7 +204,7 @@ export function InsightsScreen() {
                           }}
                         />
                         <Bar dataKey="stress" fill="var(--destructive)" radius={[8, 8, 0, 0]} name="Stress" />
-                        <Bar dataKey="energy" fill="var(--color-green-primary)" radius={[8, 8, 0, 0]} name="Energy" />
+                        <Bar dataKey="energy" fill="var(--color-blue-primary)" radius={[8, 8, 0, 0]} name="Energy" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>

@@ -16,6 +16,7 @@ export interface User {
   dateOfBirth?: string;
   createdAt: string;
   language: 'en' | 'pidgin';
+  location?: string;
 }
 
 export interface AuthResponse {
@@ -57,6 +58,7 @@ class AuthServiceClass {
     gender: string;
     maritalStatus: string;
     employmentStatus: string;
+    location?: string;
     generation?: string;
     dateOfBirth?: string;
   }): Promise<AuthResponse> {
@@ -76,6 +78,7 @@ class AuthServiceClass {
       employmentStatus: data.employmentStatus as User['employmentStatus'],
       generation,
       dateOfBirth: data.dateOfBirth,
+      location: data.location,
       createdAt: new Date().toISOString(),
       language: 'en',
     };

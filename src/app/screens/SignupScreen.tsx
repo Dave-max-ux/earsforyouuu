@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { Mail, Lock, User, Check, Calendar } from 'lucide-react';
+import { Mail, Lock, User, Check, Calendar, MapPin } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -31,7 +31,10 @@ export function SignupScreen() {
     gender: '',
     maritalStatus: '',
     employmentStatus: '',
+    location: '',
   });
+
+  
 
   const derivedGeneration = formData.dateOfBirth
     ? getGenerationFromDOB(formData.dateOfBirth)
@@ -48,6 +51,10 @@ export function SignupScreen() {
       toast.error(t('error_password_short'));
       return;
     }
+    if (!formData.location || !formData.location.trim()) {
+      toast.error('Please provide your country');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -59,8 +66,8 @@ export function SignupScreen() {
       if (result.success && result.user) {
         setUser(result.user);
         toast.success(t('success_signup'));
-        // Redirect to OTP verification before dashboard
-        navigate('/verify-email', { state: { email: formData.email } });
+        // After successful signup, navigate user to login page.
+        navigate('/login');
       } else {
         toast.error(result.message || t('error_generic'));
       }
@@ -70,6 +77,8 @@ export function SignupScreen() {
       setLoading(false);
     }
   };
+
+  
 
   const SegmentedOption = ({
     label, selected, onClick,
@@ -129,7 +138,7 @@ export function SignupScreen() {
                     {formData.password && (
                       <div className="flex gap-1 mt-1">
                         {[formData.password.length >= 8, /[A-Z]/.test(formData.password), /[0-9]/.test(formData.password)].map((ok, i) => (
-                          <div key={i} className={cn('h-1 flex-1 rounded-full transition-all', ok ? 'bg-green-400' : 'bg-white/10')} />
+                          <div key={i} className={cn('h-1 flex-1 rounded-full transition-all', ok ? 'bg-blue-500' : 'bg-white/10')} />
                         ))}
                       </div>
                     )}
@@ -222,6 +231,17 @@ export function SignupScreen() {
                         <SegmentedOption key={o.value} label={o.label} selected={formData.employmentStatus === o.value} onClick={() => setFormData({ ...formData, employmentStatus: o.value })} />
                       ))}
                     </div>
+                  </div>
+
+                  {/* Location */}
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Country</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input id="location" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} placeholder="Country" className="pl-10 bg-background/50 border-white/10" required />
+                    </div>
+                    
+                    <p className="text-xs text-muted-foreground">We only use location to improve your experience.</p>
                   </div>
 
                   <div className="flex gap-3">

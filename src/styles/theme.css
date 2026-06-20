@@ -6,38 +6,38 @@
   --font-weight-medium: 500;
   --font-weight-normal: 400;
 
-  /* Force a green + white system across light mode */
-  --color-bg-base:         #F2F8F4; /* main page background (whitish-green) */
+  /* Light mode: switch green palette to dark-blue palette for better readability */
+  --color-bg-base:         #F1F6FB; /* subtle light-blue background */
   --color-bg-surface:      #FFFFFF; /* card/panel surface (white) */
   --color-bg-elevated:     #FFFFFF; /* inputs, elevated items */
 
-  --color-green-primary:   #3D8B6E; /* primary CTA */
-  --color-green-soft:      #E6F4ED; /* AI bubble */
-  --color-green-mid:       #B2D9C8; /* borders */
-  --color-green-deep:      #2A6652; /* accents */
-  --color-green-wash:      #EDF7F1; /* panels and subtle backgrounds */
+  --color-blue-primary:    #0B3D91; /* primary CTA (dark blue) */
+  --color-blue-soft:       #E9F2FF; /* soft blue accent */
+  --color-blue-mid:        #8FB2E6; /* borders */
+  --color-blue-deep:       #0A2540; /* accents */
+  --color-blue-wash:       #EEF6FF; /* panels and subtle backgrounds */
 
-  --color-text-primary:    #0F2E23; /* dark green-tinted text */
-  --color-text-secondary:  #356A53;
-  --color-text-muted:      #6F9984;
+  --color-text-primary:    #0B2540; /* dark blue-tinted text */
+  --color-text-secondary:  #274B7A;
+  --color-text-muted:      #6B86A8;
 
-  --color-border-subtle:   #D4EAE0;
-  --color-shadow:          rgba(42, 102, 82, 0.06);
+  --color-border-subtle:   #DCEEFF;
+  --color-shadow:          rgba(11, 37, 64, 0.06);
 
-  /* Map legacy tokens to the green/white system */
+  /* Map legacy tokens to the blue/white system */
   --background: var(--color-bg-base);
   --foreground: var(--color-text-primary);
   --card: var(--color-bg-surface);
   --card-foreground: var(--color-text-primary);
   --popover: var(--color-bg-elevated);
   --popover-foreground: var(--color-text-primary);
-  --primary: var(--color-green-primary);
+  --primary: var(--color-blue-primary);
   --primary-foreground: #FFFFFF;
-  --secondary: var(--color-green-wash);
+  --secondary: var(--color-blue-wash);
   --secondary-foreground: var(--color-text-secondary);
-  --muted: var(--color-green-wash);
+  --muted: var(--color-blue-wash);
   --muted-foreground: var(--color-text-muted);
-  --accent: var(--color-green-soft);
+  --accent: var(--color-blue-soft);
   --accent-foreground: var(--color-text-primary);
   --destructive: #FB7185;
   --destructive-foreground: #FFFFFF;
@@ -45,7 +45,7 @@
   --input: transparent;
   --input-background: var(--color-bg-elevated);
   --switch-background: var(--color-border-subtle);
-  --ring: var(--color-green-primary);
+  --ring: var(--color-blue-primary);
   --radius: 1rem;
   
   /* Custom Emotional Wellness Colors */
@@ -60,22 +60,22 @@
   --text-primary: #F8FAFC;
   --text-secondary: #A5B4FC;
   
-  /* Chart colors for analytics */
+  /* Chart colors for analytics (avoid green; prefer blue-toned palettes) */
   --chart-1: #7C5CFF;
   --chart-2: #4FD1C5;
   --chart-3: #38BDF8;
-  --chart-4: #A3E635;
+  --chart-4: #2563EB; /* blue instead of green */
   --chart-5: #F97316;
   
   --radius: 1rem;
   --sidebar: #F8FAFC;
-  --sidebar-foreground: #0B0B1A;
-  --sidebar-primary: #34D399;
+  --sidebar-foreground: #0B2540;
+  --sidebar-primary: var(--color-blue-primary);
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #E0E7FF;
-  --sidebar-accent-foreground: #0B0B1A;
-  --sidebar-border: rgba(52, 211, 153, 0.1);
-  --sidebar-ring: #34D399;
+  --sidebar-accent-foreground: #0B2540;
+  --sidebar-border: rgba(11,61,145,0.06);
+  --sidebar-ring: var(--color-blue-primary);
 }
 
 .dark {

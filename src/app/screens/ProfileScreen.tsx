@@ -59,7 +59,7 @@ export function ProfileScreen() {
 
       <div className="relative z-10 px-6 py-8 max-w-2xl mx-auto lg:max-w-full lg:px-24">
         <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => navigate('/home')} className="w-10 h-10 rounded-full bg-card/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-card/80 transition-all">
+          <button onClick={() => navigate('/home')} className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-secondary transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
@@ -72,8 +72,8 @@ export function ProfileScreen() {
           {/* Profile Info */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <GlassmorphicCard glow className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/50">
-                <User className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-secondary dark:bg-primary/15 flex items-center justify-center">
+                <User className="w-9 h-9 text-primary" strokeWidth={1.75} />
               </div>
               <h2 className="text-xl font-bold mb-1">{user.fullName}</h2>
               <p className="text-sm text-muted-foreground mb-2">{user.email}</p>

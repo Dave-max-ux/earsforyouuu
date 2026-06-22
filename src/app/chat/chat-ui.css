@@ -1,18 +1,18 @@
 /* ── EarsForYou Chat UI — Light green theme + dark mode preserved ── */
 
 :root {
-  --ef-chat-primary: #2E7D32;
-  --ef-chat-primary-hover: #1B5E20;
-  --ef-chat-accent-soft: #A5D6A7;
-  --ef-chat-bg-tint: #F0FDF4;
-  --ef-chat-success: #22C55E;
+  --ef-chat-primary: #1A4D5C;
+  --ef-chat-primary-hover: #0D2840;
+  --ef-chat-accent-soft: #7EC4B8;
+  --ef-chat-bg-tint: #EDF7F2;
+  --ef-chat-success: #3D8B7A;
   --ef-chat-text-on-green: #FFFFFF;
-  --ef-chat-surface: #FFFFFF;
-  --ef-chat-text: #0F2E23;
-  --ef-chat-text-secondary: #356A53;
-  --ef-chat-text-muted: #6F9984;
-  --ef-chat-border: #D4EAE0;
-  --ef-chat-shadow: rgba(46, 125, 50, 0.08);
+  --ef-chat-surface: #FAFEFC;
+  --ef-chat-text: #0D2840;
+  --ef-chat-text-secondary: #3D5A6E;
+  --ef-chat-text-muted: #6B8A7A;
+  --ef-chat-border: #D5E8DC;
+  --ef-chat-shadow: rgba(45, 90, 70, 0.08);
   --ef-chat-error: #EF4444;
   --ef-chat-error-bg: #FEF2F2;
   --ef-chat-radius-card: 1.5rem;
@@ -46,9 +46,9 @@
 }
 
 .dark .ef-chat-card {
-  background: rgba(18, 18, 42, 0.65);
-  border-color: rgba(124, 92, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  background: rgba(15, 31, 51, 0.85);
+  border-color: rgba(95, 168, 160, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 /* ── Header ── */
@@ -63,8 +63,8 @@
 }
 
 .dark .ef-chat-header {
-  background: rgba(18, 18, 42, 0.8);
-  border-bottom-color: rgba(124, 92, 255, 0.15);
+  background: rgba(15, 31, 51, 0.9);
+  border-bottom-color: rgba(95, 168, 160, 0.12);
 }
 
 .ef-header-row {
@@ -75,24 +75,14 @@
   min-width: 0;
 }
 
-.ef-brand-chip {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.875rem;
-  background: linear-gradient(135deg, var(--ef-chat-primary), var(--ef-chat-primary-hover));
+.ef-brand-mark {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--ef-chat-text-on-green);
-  font-weight: 700;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
 }
 
-.dark .ef-brand-chip {
-  background: linear-gradient(135deg, #7C5CFF, #4FD1C5);
-  box-shadow: 0 4px 12px rgba(124, 92, 255, 0.3);
+.ef-brand-mark svg {
+  border-radius: 0.625rem;
 }
 
 .ef-header-title {
@@ -145,7 +135,7 @@
 }
 
 .dark .ef-header-btn:hover:not(:disabled) {
-  background: rgba(124, 92, 255, 0.15);
+  background: rgba(61, 139, 122, 0.15);
   color: #A5B4FC;
 }
 
@@ -240,8 +230,8 @@
 }
 
 .dark .ef-welcome-icon {
-  background: linear-gradient(135deg, rgba(124, 92, 255, 0.2), rgba(79, 209, 197, 0.1));
-  color: #7C5CFF;
+  background: linear-gradient(135deg, rgba(61, 139, 122, 0.2), rgba(79, 209, 197, 0.1));
+  color: #3D8B7A;
 }
 
 .ef-welcome-title {
@@ -287,13 +277,13 @@
 }
 
 .dark .ef-welcome-prompt {
-  background: rgba(124, 92, 255, 0.08);
-  border-color: rgba(124, 92, 255, 0.2);
+  background: rgba(61, 139, 122, 0.08);
+  border-color: rgba(61, 139, 122, 0.2);
   color: #A5B4FC;
 }
 
 .dark .ef-welcome-prompt:hover {
-  border-color: #7C5CFF;
+  border-color: #3D8B7A;
   color: #F8FAFC;
 }
 
@@ -346,8 +336,8 @@
 }
 
 .dark .ef-bubble.user {
-  background: linear-gradient(135deg, #7C5CFF, #6B4FE0);
-  box-shadow: 0 4px 16px rgba(124, 92, 255, 0.25);
+  background: linear-gradient(135deg, #3D8B7A, #1A4D5C);
+  box-shadow: 0 4px 16px rgba(61, 139, 122, 0.25);
 }
 
 .ef-bubble.failed {
@@ -484,7 +474,7 @@
 
 .dark .ef-inputbar {
   background: rgba(11, 11, 26, 0.85);
-  border-top-color: rgba(124, 92, 255, 0.15);
+  border-top-color: rgba(61, 139, 122, 0.15);
 }
 
 .ef-inputbar-inner {
@@ -518,12 +508,12 @@
 
 .dark .ef-input-field {
   background: rgba(18, 18, 42, 0.6);
-  border-color: rgba(124, 92, 255, 0.2);
+  border-color: rgba(61, 139, 122, 0.2);
 }
 
 .dark .ef-input-field:focus-within {
-  border-color: #7C5CFF;
-  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.15);
+  border-color: #3D8B7A;
+  box-shadow: 0 0 0 3px rgba(61, 139, 122, 0.15);
 }
 
 .ef-input-field textarea {
@@ -596,8 +586,8 @@
 }
 
 .dark .ef-send {
-  background: linear-gradient(135deg, #7C5CFF, #6B4FE0);
-  box-shadow: 0 4px 16px rgba(124, 92, 255, 0.3);
+  background: linear-gradient(135deg, #3D8B7A, #1A4D5C);
+  box-shadow: 0 4px 16px rgba(61, 139, 122, 0.3);
 }
 
 /* ── Voice controls ── */
@@ -633,7 +623,7 @@
 }
 
 .dark .ef-voice-btn:hover:not(:disabled) {
-  background: rgba(124, 92, 255, 0.12);
+  background: rgba(61, 139, 122, 0.12);
   color: #A5B4FC;
 }
 
@@ -666,8 +656,8 @@
 }
 
 .dark .ef-spinner {
-  border-color: rgba(124, 92, 255, 0.2);
-  border-top-color: #7C5CFF;
+  border-color: rgba(61, 139, 122, 0.2);
+  border-top-color: #3D8B7A;
 }
 
 /* ── Animations ── */

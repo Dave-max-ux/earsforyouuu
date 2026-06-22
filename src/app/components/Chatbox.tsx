@@ -166,7 +166,7 @@ export default function Chatbox() {
             <div className="brand">EF</div>
             <div>
               <div className="text-sm font-medium text-foreground">EarsForYou</div>
-              <div className="subtitle">Supportive AI assistant</div>
+              <div className="subtitle">Here to listen</div>
             </div>
           </div>
           <div className="flex items-center gap-2">

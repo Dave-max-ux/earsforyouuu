@@ -1,86 +1,40 @@
 /**
- * AnimatedBackground - Night sky with floating particles
+ * AnimatedBackground — subtle ambient depth
  */
 
-import React, { useEffect, useRef } from 'react';
-
-interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speedY: number;
-  opacity: number;
-}
+import React from 'react';
 
 export function AnimatedBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Set canvas size
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Create particles
-    const particles: Particle[] = [];
-    const particleCount = 80;
-
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 0.5,
-        speedY: Math.random() * 0.5 + 0.1,
-        opacity: Math.random() * 0.6 + 0.2,
-      });
-    }
-
-    // Animation loop
-    let animationId: number;
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach(particle => {
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(124, 92, 255, ${particle.opacity})`;
-        ctx.fill();
-
-        // Move particle
-        particle.y -= particle.speedY;
-
-        // Reset particle when it goes off screen
-        if (particle.y < -10) {
-          particle.y = canvas.height + 10;
-          particle.x = Math.random() * canvas.width;
-        }
-      });
-
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationId);
-    };
-  }, []);
-
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.4 }}
-    />
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden>
+      <div
+        className="ef-ambient-orb absolute -top-[20%] -right-[10%] w-[55%] h-[55%] rounded-full opacity-[0.45] dark:opacity-[0.15]"
+        style={{
+          background: 'radial-gradient(circle, rgba(143, 201, 176, 0.4) 0%, transparent 70%)',
+          animation: 'ef-drift 20s ease-in-out infinite',
+        }}
+      />
+      <div
+        className="ef-ambient-orb absolute -bottom-[15%] -left-[10%] w-[45%] h-[45%] rounded-full opacity-[0.35] dark:opacity-[0.12]"
+        style={{
+          background: 'radial-gradient(circle, rgba(95, 168, 160, 0.3) 0%, transparent 70%)',
+          animation: 'ef-drift 25s ease-in-out infinite reverse',
+        }}
+      />
+      <div
+        className="ef-ambient-orb absolute top-[40%] left-[60%] w-[30%] h-[30%] rounded-full opacity-[0.25] dark:opacity-[0.08]"
+        style={{
+          background: 'radial-gradient(circle, rgba(168, 212, 192, 0.35) 0%, transparent 70%)',
+          animation: 'ef-drift 18s ease-in-out infinite 2s',
+        }}
+      />
+      <style>{`
+        @keyframes ef-drift {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(2%, -1%) scale(1.03); }
+          66% { transform: translate(-1%, 2%) scale(0.98); }
+        }
+      `}</style>
+    </div>
   );
 }

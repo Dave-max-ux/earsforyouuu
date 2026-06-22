@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { EarsForYouLogo } from './EarsForYouLogo';
 
 interface Props {
   title?: string;
@@ -22,7 +23,9 @@ export default function ChatHeader({
   return (
     <header className="ef-chat-header">
       <div className="ef-header-row">
-        <div className="ef-brand-chip" aria-hidden>EF</div>
+        <div className="ef-brand-mark">
+          <EarsForYouLogo variant="mark" size="sm" />
+        </div>
         <div className="ef-header-title">
           <div className="name">{title ?? t('chat_title')}</div>
           <div className="subtitle">{subtitle ?? t('chat_subtitle')}</div>

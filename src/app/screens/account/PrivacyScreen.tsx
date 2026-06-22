@@ -51,7 +51,7 @@ export function PrivacyScreen() {
 
   const toggleRows = [
     { key: 'dataSharing' as const, icon: Share2, label: 'Data Sharing', desc: 'Share anonymized data to improve our service', color: 'text-teal-400' },
-    { key: 'aiPersonalization' as const, icon: Brain, label: 'AI Personalization', desc: 'Allow AI to learn from your patterns', color: 'text-accent' },
+    { key: 'aiPersonalization' as const, icon: Brain, label: 'Personal Recommendations', desc: 'Tailor insights based on your patterns', color: 'text-accent' },
     { key: 'wellnessRecommendations' as const, icon: Heart, label: 'Wellness Recommendations', desc: 'Receive personalized wellness tips', color: 'text-pink-400' },
     { key: 'analyticsOptIn' as const, icon: BarChart3, label: 'Usage Analytics', desc: 'Help us improve app performance', color: 'text-yellow-400' },
   ];

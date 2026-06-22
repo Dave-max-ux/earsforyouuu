@@ -1,12 +1,15 @@
 /**
  * AppContext - Centralized state management
- * Handles: auth, language, theme, generation, admin session
+ * Handles: auth, language, theme, preferences, admin session
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { User, AuthService } from '../services/AuthService';
 import { AdminAuthService } from '../services/AdminAuthService';
+import { AccountService, AppPreferences } from '../services/AccountService';
 import { t as translate, Language, TranslationKey } from '../i18n/translations';
+import { applyAccessibilityPreferences } from '../utils/accessibility';
+import { FeedbackType, triggerFeedback } from '../utils/feedback';
 
 export type { Language };
 
@@ -22,6 +25,10 @@ interface AppContextType {
   t: (key: TranslationKey) => string;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
+  preferences: AppPreferences;
+  updatePreferences: (partial: Partial<AppPreferences>) => void;
+  savePreferences: () => Promise<void>;
+  triggerInteractionFeedback: (type?: FeedbackType) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -31,11 +38,16 @@ function applyTheme(t: 'light' | 'dark') {
   else document.documentElement.classList.remove('dark');
 }
 
+function persistPreferences(prefs: AppPreferences) {
+  localStorage.setItem('earsforyou_prefs', JSON.stringify(prefs));
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<User | null>(null);
   const [language, setLanguageState] = useState<Language>('en');
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [preferences, setPreferences] = useState<AppPreferences>(() => AccountService.getAppPreferences());
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
 
@@ -58,6 +70,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTheme(savedTheme);
     applyTheme(savedTheme);
 
+    const savedPrefs = AccountService.getAppPreferences();
+    setPreferences(savedPrefs);
+    applyAccessibilityPreferences(savedPrefs);
+
     const session = AdminAuthService.getSession();
     if (session) { setIsAdmin(true); setAdminEmail(session.email); }
 
@@ -69,6 +85,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
+
+  useEffect(() => {
+    applyAccessibilityPreferences(preferences);
+  }, [preferences.accessibilityLargeText, preferences.accessibilityReduceMotion]);
 
   const setUser = useCallback((u: User | null) => {
     setUserState(u);
@@ -82,6 +102,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const updated = AuthService.updateUser({ language: lang });
       if (updated) setUserState(updated);
     }
+    setPreferences(prev => {
+      const next = { ...prev, language: lang };
+      persistPreferences(next);
+      return next;
+    });
   }, [user]);
 
   const toggleTheme = useCallback(() => {
@@ -89,9 +114,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const next = prev === 'dark' ? 'light' : 'dark';
       localStorage.setItem('earsforyou_theme', next);
       applyTheme(next);
+      setPreferences(p => {
+        const updated = { ...p, darkMode: next === 'dark' };
+        persistPreferences(updated);
+        return updated;
+      });
       return next;
     });
   }, []);
+
+  const updatePreferences = useCallback((partial: Partial<AppPreferences>) => {
+    setPreferences(prev => {
+      const next = { ...prev, ...partial };
+      persistPreferences(next);
+      return next;
+    });
+  }, []);
+
+  const savePreferences = useCallback(async () => {
+    await AccountService.saveAppPreferences({ ...preferences, darkMode: theme === 'dark', language });
+  }, [preferences, theme, language]);
+
+  const triggerInteractionFeedback = useCallback((type: FeedbackType = 'tap') => {
+    triggerFeedback(type, {
+      haptic: preferences.hapticFeedback,
+      sound: preferences.soundEffects,
+    });
+  }, [preferences.hapticFeedback, preferences.soundEffects]);
 
   const tFn = useCallback((key: TranslationKey): string => {
     return translate(language, key);
@@ -105,6 +154,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       language, setLanguage,
       t: tFn,
       theme, toggleTheme,
+      preferences, updatePreferences, savePreferences,
+      triggerInteractionFeedback,
     }}>
       {children}
     </AppContext.Provider>

@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, TrendingUp, Calendar, Lightbulb, AlertCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Calendar, Lightbulb, AlertCircle, Compass } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { AnimatedBackground } from '../components/AnimatedBackground';
 import { GlassmorphicCard } from '../components/GlassmorphicCard';
@@ -66,7 +66,7 @@ export function InsightsScreen() {
       case 'pattern':
         return TrendingUp;
       case 'encouragement':
-        return Sparkles;
+        return Compass;
       case 'suggestion':
         return Lightbulb;
       case 'observation':
@@ -145,7 +145,7 @@ export function InsightsScreen() {
                         <Tooltip
                           contentStyle={{
                             backgroundColor: 'rgba(18, 18, 42, 0.9)',
-                            border: '1px solid rgba(124, 92, 255, 0.3)',
+                            border: '1px solid rgba(61, 139, 122, 0.25)',
                             borderRadius: '12px',
                             color: 'var(--color-text-primary)',
                           }}
@@ -198,7 +198,7 @@ export function InsightsScreen() {
                         <Tooltip
                           contentStyle={{
                             backgroundColor: 'rgba(18, 18, 42, 0.9)',
-                            border: '1px solid rgba(124, 92, 255, 0.3)',
+                            border: '1px solid rgba(61, 139, 122, 0.25)',
                             borderRadius: '12px',
                             color: 'var(--color-text-primary)',
                           }}
@@ -212,7 +212,7 @@ export function InsightsScreen() {
               </motion.div>
             )}
 
-            {/* AI Insights */}
+            {/* Personal Insights */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -220,8 +220,8 @@ export function InsightsScreen() {
             >
               <GlassmorphicCard>
                 <h3 className="font-medium mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-accent" />
-                  AI-Powered Insights
+                  <Lightbulb className="w-4 h-4 text-primary" strokeWidth={1.75} />
+                  Personal Insights
                 </h3>
 
                 {insights.length > 0 ? (

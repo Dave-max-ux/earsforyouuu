@@ -6,7 +6,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  ArrowLeft, Save, BookOpen, Sparkles, Calendar, Search,
+  ArrowLeft, Save, BookOpen, Lightbulb, Calendar, Search,
   Pencil, Trash2, X, Plus, Check, Loader2
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -344,7 +344,7 @@ export function JournalScreen() {
               {showPrompts && view === 'write' && (
                 <GlassmorphicCard>
                   <h3 className="font-medium mb-3 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-accent" />
+                    <Lightbulb className="w-4 h-4 text-primary" strokeWidth={1.75} />
                     Need Inspiration?
                   </h3>
                   <div className="space-y-2">

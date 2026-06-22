@@ -53,7 +53,7 @@ const menuGroups: { title: string; items: MenuItem[] }[] = [
       {
         icon: Eye,
         label: 'Privacy Settings',
-        description: 'Visibility, data sharing, AI preferences',
+        description: 'Visibility, data sharing, and privacy settings',
         path: '/account/privacy',
         color: 'text-teal-400',
         bgColor: 'bg-teal-400/10',
@@ -147,7 +147,7 @@ export function AccountScreen() {
           <GlassmorphicCard gradient glow>
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/40 shrink-0">
+                <div className="w-16 h-16 rounded-2xl bg-secondary dark:bg-primary/15 flex items-center justify-center shrink-0">
                   <span className="text-white text-xl font-bold">{initials}</span>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-2 border-[#0B0B1A]" />

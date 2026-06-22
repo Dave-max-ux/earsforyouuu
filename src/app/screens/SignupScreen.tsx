@@ -11,6 +11,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { AnimatedBackground } from '../components/AnimatedBackground';
 import { GlassmorphicCard } from '../components/GlassmorphicCard';
+import { EarsForYouLogo } from '../components/EarsForYouLogo';
 import { AuthService, getGenerationFromDOB, GENERATION_LABELS } from '../services/AuthService';
 import { useApp } from '../context/AppContext';
 import { toast } from 'sonner';
@@ -90,7 +91,7 @@ export function SignupScreen() {
         'relative px-4 py-3 rounded-xl border-2 transition-all text-sm font-medium',
         selected
           ? 'border-primary bg-primary/10 text-primary'
-          : 'border-white/10 bg-card/40 text-muted-foreground hover:border-white/20'
+          : 'border-border bg-background text-muted-foreground hover:border-primary/30'
       )}
     >
       {label}
@@ -105,8 +106,9 @@ export function SignupScreen() {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
           <div className="flex flex-col items-center mb-8">
-            <h1 className="text-3xl font-bold">{t('signup_title')}</h1>
-            <p className="text-muted-foreground mt-2">{t('signup_step')} {step} {t('signup_of')} 2</p>
+            <EarsForYouLogo variant="mark" size="md" className="mb-4" />
+            <h1 className="font-display text-2xl font-semibold tracking-tight">{t('signup_title')}</h1>
+            <p className="text-muted-foreground mt-1.5 text-sm">{t('signup_step')} {step} {t('signup_of')} 2</p>
           </div>
 
           <GlassmorphicCard glow>
@@ -152,7 +154,7 @@ export function SignupScreen() {
                     </div>
                   </div>
 
-                  <Button type="button" onClick={() => setStep(2)} className="w-full bg-primary hover:bg-primary/90 text-white rounded-full h-12">
+                  <Button type="button" onClick={() => setStep(2)} className="w-full ef-btn-primary rounded-xl h-12">
                     {t('next')}
                   </Button>
                 </motion.div>
@@ -245,8 +247,8 @@ export function SignupScreen() {
                   </div>
 
                   <div className="flex gap-3">
-                    <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 rounded-full h-12">{t('back')}</Button>
-                    <Button type="submit" disabled={loading} className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-full h-12 shadow-lg shadow-primary/30">
+                    <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1 rounded-xl h-12 border-border">{t('back')}</Button>
+                    <Button type="submit" disabled={loading} className="flex-1 ef-btn-primary rounded-xl h-12">
                       {loading ? t('signup_creating') : t('signup_btn')}
                     </Button>
                   </div>

@@ -2,7 +2,7 @@
  * AppPreferencesScreen - Theme, language, accessibility
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import {
@@ -15,9 +15,10 @@ import { AnimatedBackground } from '../../components/AnimatedBackground';
 import { GlassmorphicCard } from '../../components/GlassmorphicCard';
 import { BottomNav } from '../../components/BottomNav';
 import { useApp } from '../../context/AppContext';
-import { AccountService, AppPreferences } from '../../services/AccountService';
 import { toast } from 'sonner';
 import { cn } from '../../components/ui/utils';
+import type { AppPreferences } from '../../services/AccountService';
+import { playSound, triggerHaptic } from '../../utils/feedback';
 
 const languageOptions = [
   { value: 'en', label: 'English', flag: '🇬🇧' },
@@ -26,9 +27,18 @@ const languageOptions = [
 
 export function AppPreferencesScreen() {
   const navigate = useNavigate();
-  const { user, theme, toggleTheme, language, setLanguage } = useApp();
-  const [prefs, setPrefs] = useState<AppPreferences>(AccountService.getAppPreferences());
-  const [saving, setSaving] = useState(false);
+  const {
+    user,
+    theme,
+    toggleTheme,
+    language,
+    setLanguage,
+    preferences,
+    updatePreferences,
+    savePreferences,
+    triggerInteractionFeedback,
+  } = useApp();
+  const [saving, setSaving] = React.useState(false);
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -36,15 +46,26 @@ export function AppPreferencesScreen() {
 
   if (!user) return null;
 
-  const toggle = (key: keyof Omit<AppPreferences, 'language'>) => {
-    setPrefs(prev => ({ ...prev, [key]: !prev[key] }));
-    if (key === 'darkMode') toggleTheme();
+  const setPref = <K extends keyof AppPreferences>(key: K, value: AppPreferences[K]) => {
+    if (key === 'darkMode' && typeof value === 'boolean') {
+      if ((value && theme !== 'dark') || (!value && theme === 'dark')) toggleTheme();
+      return;
+    }
+    updatePreferences({ [key]: value });
+
+    if (key === 'hapticFeedback' && value === true) {
+      triggerHaptic('toggle');
+    }
+    if (key === 'soundEffects' && value === true) {
+      playSound('success');
+    }
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await AccountService.saveAppPreferences({ ...prefs, darkMode: theme === 'dark', language });
+      await savePreferences();
+      triggerInteractionFeedback('success');
       toast.success('Preferences saved');
     } finally {
       setSaving(false);
@@ -63,11 +84,10 @@ export function AppPreferencesScreen() {
       <AnimatedBackground />
 
       <div className="relative z-10 px-6 py-8 max-w-2xl mx-auto lg:max-w-full lg:px-24">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate('/account')}
-            className="w-10 h-10 rounded-full bg-card/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-card/80 transition-all"
+            className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center hover:bg-secondary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -78,7 +98,6 @@ export function AppPreferencesScreen() {
         </div>
 
         <div className="space-y-5">
-          {/* Appearance */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
               Appearance
@@ -86,39 +105,44 @@ export function AppPreferencesScreen() {
             <GlassmorphicCard>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-400/10 flex items-center justify-center">
-                    <Moon className="w-4 h-4 text-indigo-400" />
+                  <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
+                    <Moon className="w-4 h-4 text-primary" />
                   </div>
                   <div>
                     <Label className="text-sm font-medium cursor-pointer">Dark Mode</Label>
                     <p className="text-xs text-muted-foreground">{theme === 'dark' ? 'Enabled' : 'Disabled'}</p>
                   </div>
                 </div>
-                <Switch checked={theme === 'dark'} onCheckedChange={() => toggle('darkMode')} />
+                <Switch
+                  checked={theme === 'dark'}
+                  onCheckedChange={(checked) => setPref('darkMode', checked)}
+                />
               </div>
             </GlassmorphicCard>
           </motion.div>
 
-          {/* Language */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
               Language
             </p>
             <GlassmorphicCard>
               <div className="flex items-center gap-2 mb-4">
-                <Globe className="w-4 h-4 text-teal-400" />
+                <Globe className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">App Language</p>
               </div>
               <div className="flex gap-3">
                 {languageOptions.map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => setLanguage(opt.value)}
+                    onClick={() => {
+                      triggerInteractionFeedback('tap');
+                      setLanguage(opt.value);
+                    }}
                     className={cn(
-                      'flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl border transition-all',
+                      'flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-colors',
                       language === opt.value
                         ? 'border-primary/50 bg-primary/10 text-primary'
-                        : 'border-white/10 bg-white/3 text-muted-foreground hover:bg-white/5'
+                        : 'border-border bg-background text-muted-foreground hover:bg-secondary'
                     )}
                   >
                     <span>{opt.flag}</span>
@@ -129,7 +153,6 @@ export function AppPreferencesScreen() {
             </GlassmorphicCard>
           </motion.div>
 
-          {/* Accessibility */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
               Accessibility & Personalization
@@ -141,7 +164,7 @@ export function AppPreferencesScreen() {
                   return (
                     <div
                       key={row.key}
-                      className={cn('flex items-center justify-between py-4', i < accessibilityRows.length - 1 && 'border-b border-white/5')}
+                      className={cn('flex items-center justify-between py-4', i < accessibilityRows.length - 1 && 'border-b border-border')}
                     >
                       <div className="flex items-center gap-3">
                         <Icon className="w-4 h-4 text-muted-foreground" />
@@ -151,8 +174,8 @@ export function AppPreferencesScreen() {
                         </div>
                       </div>
                       <Switch
-                        checked={prefs[row.key]}
-                        onCheckedChange={() => toggle(row.key)}
+                        checked={preferences[row.key]}
+                        onCheckedChange={(checked) => setPref(row.key, checked)}
                       />
                     </div>
                   );
@@ -165,7 +188,7 @@ export function AppPreferencesScreen() {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="w-full bg-primary hover:bg-primary/90 text-white rounded-2xl h-12 shadow-lg shadow-primary/30"
+              className="w-full ef-btn-primary rounded-xl h-12"
             >
               {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Save Preferences'}
             </Button>

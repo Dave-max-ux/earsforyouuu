@@ -79,7 +79,7 @@ export function EditProfileScreen() {
 
         {/* Avatar — initials only, no photo upload */}
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center mb-8">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-xl shadow-primary/40">
+          <div className="w-24 h-24 rounded-2xl bg-secondary dark:bg-primary/15 flex items-center justify-center">
             <span className="text-white text-3xl font-bold">{initials}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-3">{fullName || 'Your Name'}</p>

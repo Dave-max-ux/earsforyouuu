@@ -1,5 +1,5 @@
 /**
- * GlassmorphicCard - Premium glassmorphism card component
+ * GlassmorphicCard — refined surface card
  */
 
 import React, { ReactNode } from 'react';
@@ -13,24 +13,22 @@ interface GlassmorphicCardProps {
   gradient?: boolean;
 }
 
-export function GlassmorphicCard({ 
-  children, 
-  className, 
-  onClick, 
+export function GlassmorphicCard({
+  children,
+  className,
+  onClick,
   glow = false,
-  gradient = false 
+  gradient = false,
 }: GlassmorphicCardProps) {
   return (
     <div
       className={cn(
-        'relative rounded-3xl p-6 transition-all duration-300',
-        'backdrop-blur-xl',
-        'border border-white/10',
-        gradient 
-          ? 'bg-gradient-to-br from-primary/10 via-accent/5 to-transparent'
-          : 'bg-card/60',
-        glow && 'shadow-lg shadow-primary/20',
-        onClick && 'cursor-pointer hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/30',
+        'relative rounded-2xl p-6 transition-all duration-200',
+        'bg-card border border-border',
+        gradient && 'bg-gradient-to-br from-[rgba(61,139,122,0.04)] via-transparent to-transparent',
+        glow && 'shadow-md dark:shadow-lg dark:shadow-black/20',
+        !glow && 'shadow-sm',
+        onClick && 'cursor-pointer hover:shadow-md hover:border-primary/20 active:scale-[0.99]',
         className
       )}
       onClick={onClick}

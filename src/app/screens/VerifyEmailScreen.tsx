@@ -9,20 +9,18 @@ import { motion } from 'motion/react';
 import { MailCheck, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { AnimatedBackground } from '../components/AnimatedBackground';
 import { GlassmorphicCard } from '../components/GlassmorphicCard';
+import { AuthService } from '../services/AuthService';
 import { useApp } from '../context/AppContext';
 import { cn } from '../components/ui/utils';
 import { toast } from 'sonner';
 
-const OTP_KEY = 'earsforyou_reg_otp';
-
-function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
-
 export function VerifyEmailScreen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, t } = useApp();
+  const { user, setUser, t } = useApp();
 
   // Email passed from signup via location state
   const email: string = (location.state as any)?.email ?? user?.email ?? '';
@@ -30,51 +28,86 @@ export function VerifyEmailScreen() {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [countdown, setCountdown] = useState(60);
+  const [expiryCountdown, setExpiryCountdown] = useState(5 * 60);
+  const [resendCountdown, setResendCountdown] = useState(60);
   const [success, setSuccess] = useState(false);
+  const [demoOtp, setDemoOtp] = useState('');
+  const [pendingEmail, setPendingEmail] = useState(email);
 
   useEffect(() => {
-    // Generate and "send" OTP on mount
-    const code = generateOTP();
-    sessionStorage.setItem(OTP_KEY, code);
-    console.info(`[DEV] Registration OTP for ${email}: ${code}`);
-    // In production: backend sends real email — no localStorage
-  }, [email]);
+    (async () => {
+      if (!email) {
+        navigate('/signup', { replace: true });
+        return;
+      }
+
+      const pending = await AuthService.getPendingRegistration(email);
+      if (!pending) {
+        toast.error('No pending signup found. Please start again.');
+        navigate('/signup', { replace: true });
+        return;
+      }
+
+      setPendingEmail(email);
+      setDemoOtp(pending.otp);
+      setExpiryCountdown(Math.max(0, Math.ceil((pending.expiresAt - Date.now()) / 1000)));
+      setResendCountdown(60);
+    })();
+  }, [email, navigate]);
 
   useEffect(() => {
-    if (countdown <= 0) return;
-    const id = setTimeout(() => setCountdown(c => c - 1), 1000);
+    if (expiryCountdown <= 0) return;
+    const id = setTimeout(() => setExpiryCountdown(c => Math.max(0, c - 1)), 1000);
     return () => clearTimeout(id);
-  }, [countdown]);
+  }, [expiryCountdown]);
 
-  const handleResend = () => {
-    const code = generateOTP();
-    sessionStorage.setItem(OTP_KEY, code);
-    console.info(`[DEV] Resent OTP: ${code}`);
-    setCountdown(60);
-    setOtp('');
-    setError('');
-    toast.success('New verification code sent');
-    // In production: POST /api/v1/users/resend-otp
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const id = setTimeout(() => setResendCountdown(c => Math.max(0, c - 1)), 1000);
+    return () => clearTimeout(id);
+  }, [resendCountdown]);
+
+  const handleResend = async () => {
+    if (resendCountdown > 0) return;
+    setLoading(true);
+    try {
+      const response = await AuthService.resendPendingRegistrationOtp(pendingEmail);
+      if (!response.success || !response.otp) {
+        toast.error(response.message || t('error_generic'));
+        return;
+      }
+      setDemoOtp(response.otp);
+      setExpiryCountdown(5 * 60);
+      setResendCountdown(60);
+      setOtp('');
+      setError('');
+      toast.success('New verification code sent');
+    } catch {
+      toast.error(t('error_generic'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6) { setError(t('error_otp_invalid')); return; }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    // In production: POST /api/v1/users/verify-user  { email, otp }
-    const stored = sessionStorage.getItem(OTP_KEY);
-    if (otp !== stored) {
-      setError(t('error_otp_invalid'));
+    try {
+      const verifyRes = await AuthService.verifyPendingRegistration(pendingEmail, otp);
+      if (verifyRes.success) {
+        if (verifyRes.user) setUser(verifyRes.user);
+        setSuccess(true);
+        toast.success(t('success_email_verified'));
+        setTimeout(() => navigate('/home', { replace: true }), 1400);
+      } else {
+        setError(verifyRes.message || t('error_otp_invalid'));
+      }
+    } catch {
+      setError(t('error_generic'));
+    } finally {
       setLoading(false);
-      return;
     }
-    sessionStorage.removeItem(OTP_KEY);
-    setSuccess(true);
-    setLoading(false);
-    toast.success(t('success_email_verified'));
-    setTimeout(() => navigate('/home', { replace: true }), 1400);
   };
 
   if (success) {
@@ -111,39 +144,36 @@ export function VerifyEmailScreen() {
           </div>
 
           <GlassmorphicCard glow>
+            <div className="space-y-4 mb-4">
+              <div className="rounded-3xl border border-white/10 bg-white/10 p-4 shadow-inner shadow-black/10 backdrop-blur-md">
+                <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground mb-2">Demo OTP (Development Only)</div>
+                <div className="text-4xl font-semibold text-primary text-center">{demoOtp || '------'}</div>
+              </div>
+              <div className="rounded-3xl border border-primary/20 bg-primary/5 p-4">
+                <div className="text-sm text-primary font-medium">Verify your account</div>
+                <div className="text-xs text-muted-foreground mt-1">A one-time code was generated after Create Account. Enter it below to complete signup.</div>
+              </div>
+            </div>
+
             <form onSubmit={handleVerify} className="space-y-5">
               <div className="space-y-2">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={otp}
-                  onChange={e => { setOtp(e.target.value.replace(/\D/g, '')); setError(''); }}
-                  placeholder="000000"
-                  className={cn(
-                    'text-center tracking-[0.5em] text-2xl font-bold h-14 bg-background/50 border-white/10',
-                    error && 'border-destructive'
-                  )}
-                  autoFocus
-                />
-                {error && <p className="text-xs text-destructive text-center">{error}</p>}
+                <Label htmlFor="otp">Enter the 6-digit code sent to your email</Label>
+                <div className="relative">
+                  <Input id="otp" type="text" inputMode="numeric" maxLength={6} value={otp} onChange={e => { setOtp(e.target.value.replace(/\D/g, '')); setError(''); }} placeholder="123456" className={cn('pl-4 bg-background/50 border-white/10', error && 'border-destructive')} required />
+                </div>
+                <p className="text-xs text-muted-foreground">Code expires in {Math.max(0, expiryCountdown)} seconds. Resend available in {Math.max(0, resendCountdown)} seconds.</p>
+                {error && <p className="text-xs text-destructive">{error}</p>}
               </div>
 
-              <Button
-                type="submit"
-                disabled={loading || otp.length !== 6}
-                className="w-full bg-primary hover:bg-primary/90 text-white rounded-full h-12 shadow-lg shadow-primary/30"
-              >
+              <Button type="submit" disabled={loading || otp.length !== 6} className="w-full bg-primary hover:bg-primary/90 text-white rounded-full h-12 shadow-lg shadow-primary/30">
                 {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying…</> : 'Verify & Continue'}
               </Button>
 
               <div className="text-center">
-                {countdown > 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    {t('forgot_resend_in')} {countdown}s
-                  </p>
+                {resendCountdown > 0 ? (
+                  <p className="text-sm text-muted-foreground">Resend available in {resendCountdown}s</p>
                 ) : (
-                  <button type="button" onClick={handleResend} className="text-sm text-primary hover:underline flex items-center gap-1.5 mx-auto">
+                  <button type="button" onClick={handleResend} className="text-sm text-primary hover:underline inline-flex items-center gap-1.5 mx-auto">
                     <RefreshCw className="w-3.5 h-3.5" /> Resend Code
                   </button>
                 )}

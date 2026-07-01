@@ -46,6 +46,9 @@ export const GENERATION_LABELS: Record<GenerationKey, string> = {
 class AuthServiceClass {
   private STORAGE_KEY = 'earsforyou_user';
   private SESSION_KEY = 'earsforyou_session';
+  private PENDING_REGISTRATION_KEY = 'earsforyou_pending_registration';
+  private PENDING_REGISTRATION_OTP_KEY = 'earsforyou_pending_registration_otp';
+  private PENDING_OTP_TTL = 5 * 60 * 1000;
 
   private async simulateDelay(ms = 800): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -84,8 +87,116 @@ class AuthServiceClass {
     };
 
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(user));
-    localStorage.setItem(this.SESSION_KEY, 'active');
     return { success: true, user };
+  }
+
+  private getStoredPendingRegistration(): { email: string; data: { email: string; password: string; fullName: string; gender: string; maritalStatus: string; employmentStatus: string; location?: string; generation?: string; dateOfBirth?: string; }; } | null {
+    const raw = sessionStorage.getItem(this.PENDING_REGISTRATION_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  private getStoredPendingOtp(): { otp: string; expiresAt: number } | null {
+    const raw = sessionStorage.getItem(this.PENDING_REGISTRATION_OTP_KEY);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  private savePendingRegistration(email: string, data: { email: string; password: string; fullName: string; gender: string; maritalStatus: string; employmentStatus: string; location?: string; generation?: string; dateOfBirth?: string; }) {
+    sessionStorage.setItem(this.PENDING_REGISTRATION_KEY, JSON.stringify({ email, data }));
+  }
+
+  private savePendingOtp(otp: string, expiresAt: number) {
+    sessionStorage.setItem(this.PENDING_REGISTRATION_OTP_KEY, JSON.stringify({ otp, expiresAt }));
+  }
+
+  private clearPendingRegistration() {
+    sessionStorage.removeItem(this.PENDING_REGISTRATION_KEY);
+    sessionStorage.removeItem(this.PENDING_REGISTRATION_OTP_KEY);
+  }
+
+  async beginPendingRegistration(data: {
+    email: string;
+    password: string;
+    fullName: string;
+    gender: string;
+    maritalStatus: string;
+    employmentStatus: string;
+    location?: string;
+    generation?: string;
+    dateOfBirth?: string;
+  }): Promise<{ success: boolean; message?: string; otp?: string }> {
+    await this.simulateDelay();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + this.PENDING_OTP_TTL;
+    try {
+      this.savePendingRegistration(data.email, data);
+      this.savePendingOtp(otp, expiresAt);
+      // Helpful for local development to surface the OTP in console
+      // eslint-disable-next-line no-console
+      console.debug(`[AuthService] Pending registration OTP for ${data.email}: ${otp}`);
+      return { success: true, otp };
+    } catch {
+      return { success: false, message: 'Unable to start signup' };
+    }
+  }
+
+  async resendPendingRegistrationOtp(email: string): Promise<{ success: boolean; message?: string; otp?: string }> {
+    await this.simulateDelay();
+    const pending = this.getStoredPendingRegistration();
+    if (!pending || pending.email !== email) {
+      return { success: false, message: 'No pending signup found' };
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + this.PENDING_OTP_TTL;
+    this.savePendingOtp(otp, expiresAt);
+    // eslint-disable-next-line no-console
+    console.debug(`[AuthService] Resent pending registration OTP for ${email}: ${otp}`);
+    return { success: true, otp, message: 'OTP resent' };
+  }
+
+  async getPendingRegistration(email: string): Promise<{ otp: string; expiresAt: number } | null> {
+    const pending = this.getStoredPendingRegistration();
+    if (!pending || pending.email !== email) return null;
+    const otpRecord = this.getStoredPendingOtp();
+    if (!otpRecord) return null;
+    return otpRecord;
+  }
+
+  async verifyPendingRegistration(email: string, otp: string): Promise<AuthResponse> {
+    await this.simulateDelay();
+    const pending = this.getStoredPendingRegistration();
+    if (!pending || pending.email !== email) {
+      return { success: false, message: 'No pending signup found' };
+    }
+    const otpRecord = this.getStoredPendingOtp();
+    if (!otpRecord) {
+      this.clearPendingRegistration();
+      return { success: false, message: 'OTP expired' };
+    }
+    if (Date.now() > otpRecord.expiresAt) {
+      this.clearPendingRegistration();
+      return { success: false, message: 'OTP expired' };
+    }
+    if (otp !== otpRecord.otp) {
+      return { success: false, message: 'Invalid OTP' };
+    }
+    const registrationResult = await this.register(pending.data);
+    if (!registrationResult.success) {
+      this.clearPendingRegistration();
+      return registrationResult;
+    }
+    localStorage.setItem(this.SESSION_KEY, 'active');
+    this.clearPendingRegistration();
+    return { success: true, user: registrationResult.user, message: 'OTP verified' };
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {

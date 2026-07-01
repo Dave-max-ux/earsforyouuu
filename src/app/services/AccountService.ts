@@ -256,17 +256,82 @@ class AccountServiceClass {
   }
 
   // ── Data Management ───────────────────────────────────────
-  async requestDataExport(type: 'all' | 'journal' | 'mood'): Promise<{ success: boolean; downloadUrl?: string; message?: string }> {
+  async requestDataExport(type: 'all' | 'journal' | 'mood'): Promise<{ success: boolean; downloadUrl?: string; fileName?: string; message?: string }> {
     await this.simulateDelay(2000);
     // In production: POST /api/account/data-export  → returns signed S3 URL
+    const user = AuthService.getCurrentUser();
     const data = {
       exportType: type,
       requestedAt: new Date().toISOString(),
-      user: AuthService.getCurrentUser(),
+      user,
       note: 'Export ready – in production this would be a real download URL',
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    return { success: true, downloadUrl: URL.createObjectURL(blob), message: 'Export ready' };
+
+    const sectionContent = JSON.stringify(data, null, 2)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EarsForYou Data Export</title>
+  <style>
+    :root { color-scheme: dark; color: #f9fafb; background: #081018; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at top left, rgba(73, 214, 255, 0.18), transparent 25%), radial-gradient(circle at bottom right, rgba(155, 89, 182, 0.16), transparent 20%), #081018; }
+    .wrapper { width: min(100%, 980px); border-radius: 32px; background: rgba(12, 18, 32, 0.92); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
+    .header { padding: 3rem 3rem 2rem; background: linear-gradient(180deg, rgba(106, 172, 255, 0.14), transparent); }
+    .badge { display: inline-flex; gap: 0.5rem; align-items: center; padding: 0.55rem 1rem; border-radius: 999px; background: rgba(81, 86, 248, 0.16); color: #c7d2fe; font-size: 0.86rem; letter-spacing: 0.12em; text-transform: uppercase; }
+    .title { margin: 1rem 0 0.5rem; font-size: clamp(2rem, 2.7vw, 3.25rem); line-height: 1.05; letter-spacing: -0.04em; }
+    .subtitle { color: #94a3b8; max-width: 40rem; line-height: 1.8; }
+    .content { display: grid; gap: 1.5rem; padding: 2rem 3rem 3rem; }
+    .card { padding: 1.75rem; border-radius: 28px; background: rgba(12, 20, 38, 0.96); border: 1px solid rgba(255,255,255,0.07); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+    .card h2 { margin: 0 0 0.85rem; font-size: 1.1rem; color: #fff; }
+    .card p { margin: 0; color: #9ca3af; line-height: 1.8; }
+    pre { margin: 1rem 0 0; padding: 1rem; border-radius: 22px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.06); overflow-x: auto; font-size: 0.92rem; line-height: 1.6; color: #e2e8f0; }
+    .legend { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-top: 1.5rem; }
+    .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 0.85rem; border-radius: 999px; background: rgba(99, 102, 241, 0.16); color: #e0e7ff; font-size: 0.88rem; }
+    .pill::before { content: '•'; color: #93c5fd; }
+    footer { padding: 1rem 3rem 2rem; color: #7c84a3; font-size: 0.88rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="badge">EarsForYou Data Export</div>
+      <h1 class="title">Your personal wellness report</h1>
+      <p class="subtitle">This export is designed as a calm, supportive snapshot of your data. Use it as a reflective report or keep it for your own emotional wellness journal.</p>
+    </div>
+    <div class="content">
+      <div class="card">
+        <h2>Export details</h2>
+        <p><strong>Type:</strong> ${type === 'all' ? 'Complete wellness export' : type === 'journal' ? 'Journal entries' : 'Mood history'}</p>
+        <p><strong>Exported on:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>Generated for:</strong> ${user?.fullName ?? 'Unknown user'} (${user?.email ?? 'no email'})</p>
+      </div>
+      <div class="card">
+        <h2>How to use this export</h2>
+        <p>Keep this report as a gentle reflection of your mental wellness journey. Share with a trusted friend, therapist, or keep it private for later review.</p>
+        <div class="legend">
+          <span class="pill">Slow down and breathe</span>
+          <span class="pill">Review with kindness</span>
+          <span class="pill">Notice patterns, not perfection</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Raw export content</h2>
+        <pre>${sectionContent}</pre>
+      </div>
+    </div>
+    <footer>Thank you for caring for your emotional wellbeing with EarsForYou.</footer>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    return { success: true, downloadUrl: URL.createObjectURL(blob), fileName: `earsforyou-${type}-export.html`, message: 'Export ready' };
   }
 
   async deactivateAccount(): Promise<{ success: boolean; message?: string }> {

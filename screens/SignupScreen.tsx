@@ -19,7 +19,7 @@ import { cn } from '../components/ui/utils';
 
 export function SignupScreen() {
   const navigate = useNavigate();
-  const { setUser, t } = useApp();
+  const { t } = useApp();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -44,6 +44,14 @@ export function SignupScreen() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.fullName.trim()) {
+      toast.error('Please enter your full name');
+      return;
+    }
+    if (!formData.email.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error(t('error_passwords_no_match'));
       return;
@@ -52,30 +60,53 @@ export function SignupScreen() {
       toast.error(t('error_password_short'));
       return;
     }
-    if (!formData.location || !formData.location.trim()) {
+    if (!formData.dateOfBirth) {
+      toast.error('Please enter your date of birth');
+      return;
+    }
+    if (!formData.gender) {
+      toast.error('Please select your gender');
+      return;
+    }
+    if (!formData.maritalStatus) {
+      toast.error('Please select your marital status');
+      return;
+    }
+    if (!formData.employmentStatus) {
+      toast.error('Please select your employment status');
+      return;
+    }
+    if (!formData.location.trim()) {
       toast.error('Please provide your country');
       return;
     }
 
     setLoading(true);
     try {
-      const result = await AuthService.register({
+      const pendingResult = await AuthService.beginPendingRegistration({
         ...formData,
         generation: derivedGeneration ?? undefined,
       });
 
-      if (result.success && result.user) {
-        setUser(result.user);
-        toast.success(t('success_signup'));
-        // After successful signup, navigate user to login page.
-        navigate('/login');
-      } else {
-        toast.error(result.message || t('error_generic'));
+      if (!pendingResult.success) {
+        toast.error(pendingResult.message || t('error_generic'));
+        return;
       }
+
+      navigate('/verify-email', { state: { email: formData.email } });
     } catch {
       toast.error(t('error_generic'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === 1) {
+      setStep(2);
+    } else {
+      handleSubmit(e);
     }
   };
 
@@ -105,14 +136,14 @@ export function SignupScreen() {
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-          <div className="flex flex-col items-center mb-8">
+            <div className="flex flex-col items-center mb-8">
             <EarsForYouLogo variant="mark" size="md" className="mb-4" />
             <h1 className="font-display text-2xl font-semibold tracking-tight">{t('signup_title')}</h1>
             <p className="text-muted-foreground mt-1.5 text-sm">{t('signup_step')} {step} {t('signup_of')} 2</p>
           </div>
 
           <GlassmorphicCard glow>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleFormSubmit} className="space-y-6">
               {step === 1 && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
                   <div className="space-y-2">
@@ -254,6 +285,7 @@ export function SignupScreen() {
                   </div>
                 </motion.div>
               )}
+
             </form>
           </GlassmorphicCard>
 

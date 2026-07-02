@@ -36,6 +36,12 @@ export default defineConfig({
 
   configureServer(server) {
     server.middlewares.use((req, res, next) => {
+      if (!req.url?.startsWith('/api/') && !req.url?.includes('.')) {
+        req.url = '/index.html'
+      }
+      next()
+    })
+    server.middlewares.use((req, res, next) => {
       try {
         if (req.url?.startsWith('/api/chat/stream') && req.method === 'POST') {
           let body = ''

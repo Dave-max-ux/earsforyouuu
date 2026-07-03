@@ -48,7 +48,7 @@ export function DataManagementScreen() {
       if (result.success && result.downloadUrl) {
         const a = document.createElement('a');
         a.href = result.downloadUrl;
-        a.download = `earsforyou-${type}-export.json`;
+        a.download = result.fileName ?? `earsforyou-${type}-export.html`;
         a.click();
         toast.success('Export downloaded successfully');
       }

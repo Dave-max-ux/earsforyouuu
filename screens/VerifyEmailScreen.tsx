@@ -9,6 +9,7 @@ import { motion } from 'motion/react';
 import { MailCheck, Loader2, RefreshCw, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import { AnimatedBackground } from '../components/AnimatedBackground';
 import { GlassmorphicCard } from '../components/GlassmorphicCard';
 import { AuthService } from '../services/AuthService';
@@ -181,11 +182,6 @@ export function VerifyEmailScreen() {
           </GlassmorphicCard>
 
           <p className="text-center text-xs text-muted-foreground mt-6">
-            Prefer to sign in?{' '}
-            <button onClick={() => navigate('/login')} className="text-primary hover:underline">Back to login</button>
-          </p>
-
-          <p className="text-center text-xs text-muted-foreground mt-2">
             Wrong email?{' '}
             <button onClick={() => navigate('/signup')} className="text-primary hover:underline">Go back to signup</button>
           </p>

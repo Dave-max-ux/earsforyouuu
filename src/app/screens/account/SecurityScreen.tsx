@@ -1,14 +1,13 @@
 /**
- * SecurityScreen - Password, OTP, sessions, activity log
+ * SecurityScreen - Password, email, sessions
  */
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  ArrowLeft, Lock, Smartphone, History, ChevronRight,
-  Shield, AlertTriangle, CheckCircle, XCircle, Loader2,
-  LogOut, Trash2, Eye, EyeOff, Key, Mail
+  ArrowLeft, Lock, Smartphone, ChevronRight,
+  Shield, Loader2, LogOut, Trash2, Eye, EyeOff, Key, Mail
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -22,26 +21,31 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '../../components/ui/alert-dialog';
 import { useApp } from '../../context/AppContext';
-import { AccountService, Session, ActivityLog } from '../../services/AccountService';
+import { AccountService, Session } from '../../services/AccountService';
 import { toast } from 'sonner';
 import { cn } from '../../components/ui/utils';
 
-type ActiveSection = 'menu' | 'password' | 'otp' | 'sessions' | 'activity' | 'change-email';
+type ActiveSection = 'menu' | 'password' | 'otp' | 'sessions' | 'change-email';
 
 export function SecurityScreen() {
   const navigate = useNavigate();
   const { user } = useApp();
   const [activeSection, setActiveSection] = useState<ActiveSection>('menu');
 
-  // Password change state
+  // Password change — step 1: verify, step 2: reset with OTP
+  const [pwdStep, setPwdStep] = useState<'verify' | 'reset'>('verify');
+  const [pwdEmail, setPwdEmail] = useState('');
   const [currentPwd, setCurrentPwd] = useState('');
+  const [pwdOtp, setPwdOtp] = useState('');
   const [newPwd, setNewPwd] = useState('');
   const [confirmPwd, setConfirmPwd] = useState('');
   const [showCurrentPwd, setShowCurrentPwd] = useState(false);
   const [showNewPwd, setShowNewPwd] = useState(false);
   const [pwdLoading, setPwdLoading] = useState(false);
+  const [pwdResendCountdown, setPwdResendCountdown] = useState(0);
+  const PWD_OTP_KEY = 'earsforyou_pwd_change_otp';
 
-  // OTP state
+  // OTP state (email verification)
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
@@ -49,7 +53,7 @@ export function SecurityScreen() {
 
   // Change email state
   const [emailStep, setEmailStep] = useState<'form' | 'otp'>('form');
-  const [currentEmailPwd, setCurrentEmailPwd] = useState('');
+  const [oldEmail, setOldEmail] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [emailOtp, setEmailOtp] = useState('');
   const [emailLoading, setEmailLoading] = useState(false);
@@ -57,22 +61,10 @@ export function SecurityScreen() {
 
   // Sessions
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
-
-  // Activity
-  const [activity, setActivity] = useState<ActivityLog[]>([]);
-  const [activityLoading, setActivityLoading] = useState(false);
 
   useEffect(() => {
     if (activeSection === 'sessions') {
-      setSessionsLoading(true);
       setSessions(AccountService.getSessions());
-      setSessionsLoading(false);
-    }
-    if (activeSection === 'activity') {
-      setActivityLoading(true);
-      setActivity(AccountService.getActivityLog());
-      setActivityLoading(false);
     }
   }, [activeSection]);
 
@@ -83,31 +75,67 @@ export function SecurityScreen() {
   }, [resendCountdown]);
 
   useEffect(() => {
+    if (pwdResendCountdown <= 0) return;
+    const t = setTimeout(() => setPwdResendCountdown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [pwdResendCountdown]);
+
+  useEffect(() => {
     if (!user) navigate('/login');
   }, [user, navigate]);
 
+  useEffect(() => {
+    if (user && activeSection === 'password' && pwdStep === 'verify') {
+      setPwdEmail(user.email);
+    }
+  }, [user, activeSection, pwdStep]);
+
   if (!user) return null;
 
-  // ── Password Change ──
-  const handleChangePassword = async () => {
-    if (!currentPwd || !newPwd || !confirmPwd) {
-      toast.error('Please fill in all fields');
+  const resetPasswordSection = () => {
+    setPwdStep('verify');
+    setPwdEmail(user.email);
+    setCurrentPwd('');
+    setPwdOtp('');
+    setNewPwd('');
+    setConfirmPwd('');
+  };
+
+  const handleSendPasswordOTP = async () => {
+    if (!pwdEmail.trim()) { toast.error('Enter your email address'); return; }
+    if (pwdEmail.toLowerCase() !== user.email.toLowerCase()) {
+      toast.error('Email does not match your account');
       return;
     }
-    if (newPwd !== confirmPwd) {
-      toast.error('New passwords do not match');
-      return;
-    }
-    if (newPwd.length < 8) {
-      toast.error('Password must be at least 8 characters');
-      return;
-    }
+    if (!currentPwd) { toast.error('Enter your current password'); return; }
     setPwdLoading(true);
     try {
+      await new Promise(r => setTimeout(r, 800));
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      sessionStorage.setItem(PWD_OTP_KEY, otp);
+      console.info(`[DEV] Password change OTP: ${otp}`);
+      toast.success(`Verification code sent to ${user.email}`);
+      setPwdStep('reset');
+      setPwdResendCountdown(60);
+    } finally {
+      setPwdLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (pwdOtp.length !== 6) { toast.error('Enter 6-digit code'); return; }
+    if (!newPwd || !confirmPwd) { toast.error('Please fill in all fields'); return; }
+    if (newPwd !== confirmPwd) { toast.error('New passwords do not match'); return; }
+    if (newPwd.length < 8) { toast.error('Password must be at least 8 characters'); return; }
+    setPwdLoading(true);
+    try {
+      const stored = sessionStorage.getItem(PWD_OTP_KEY);
+      if (pwdOtp !== stored) { toast.error('Invalid verification code'); return; }
       const result = await AccountService.changePassword(currentPwd, newPwd);
       if (result.success) {
+        sessionStorage.removeItem(PWD_OTP_KEY);
         toast.success('Password changed successfully');
-        setCurrentPwd(''); setNewPwd(''); setConfirmPwd('');
+        resetPasswordSection();
         setActiveSection('menu');
       } else {
         toast.error(result.message || 'Failed to change password');
@@ -117,7 +145,14 @@ export function SecurityScreen() {
     }
   };
 
-  // ── OTP ──
+  const handleResendPasswordOTP = async () => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    sessionStorage.setItem(PWD_OTP_KEY, otp);
+    console.info(`[DEV] Password change OTP: ${otp}`);
+    setPwdResendCountdown(60);
+    toast.success(`New code sent to ${user.email}`);
+  };
+
   const handleSendOTP = async () => {
     setOtpLoading(true);
     try {
@@ -156,7 +191,6 @@ export function SecurityScreen() {
     }
   };
 
-  // ── Sessions ──
   const handleTerminateSession = async (id: string) => {
     const result = await AccountService.terminateSession(id);
     if (result.success) {
@@ -174,12 +208,19 @@ export function SecurityScreen() {
   };
 
   const menuItems = [
-    { id: 'password', icon: Lock, label: 'Change Password', desc: 'Update your login password', color: 'text-primary', bg: 'bg-primary/10' },
+    { id: 'password', icon: Lock, label: 'Change Password', desc: 'Verify email and update password', color: 'text-primary', bg: 'bg-primary/10' },
     { id: 'change-email', icon: Mail, label: 'Change Email', desc: 'Update your email address', color: 'text-teal-400', bg: 'bg-teal-400/10' },
     { id: 'otp', icon: Key, label: 'Email Verification', desc: 'Verify or re-verify your email', color: 'text-accent', bg: 'bg-accent/10' },
     { id: 'sessions', icon: Smartphone, label: 'Active Sessions', desc: 'Manage devices & sessions', color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-    { id: 'activity', icon: History, label: 'Security Activity', desc: 'View login & account history', color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
   ] as const;
+
+  const sectionTitles: Record<ActiveSection, string> = {
+    menu: 'Security Settings',
+    password: 'Change Password',
+    'change-email': 'Change Email',
+    otp: 'Email Verification',
+    sessions: 'Active Sessions',
+  };
 
   const renderSection = () => {
     if (activeSection === 'menu') {
@@ -221,15 +262,85 @@ export function SecurityScreen() {
     }
 
     if (activeSection === 'password') {
+      if (pwdStep === 'verify') {
+        return (
+          <motion.div key="password-verify" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+            <GlassmorphicCard>
+              <h3 className="font-medium mb-2 flex items-center gap-2">
+                <Key className="w-4 h-4 text-primary" /> Verify Your Identity
+              </h3>
+              <p className="text-sm text-muted-foreground mb-5">
+                Enter your email and current password. We&apos;ll send a verification code to your email.
+              </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      value={pwdEmail}
+                      onChange={e => setPwdEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="pl-10 bg-background/50 border-white/10"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Current Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type={showCurrentPwd ? 'text' : 'password'}
+                      value={currentPwd}
+                      onChange={e => setCurrentPwd(e.target.value)}
+                      placeholder="••••••••"
+                      className="pl-10 pr-10 bg-background/50 border-white/10"
+                    />
+                    <button type="button" onClick={() => setShowCurrentPwd(!showCurrentPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {showCurrentPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </GlassmorphicCard>
+            <Button onClick={handleSendPasswordOTP} disabled={pwdLoading} className="w-full bg-primary hover:bg-primary/90 text-white rounded-2xl h-12 shadow-lg shadow-primary/30">
+              {pwdLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending code…</> : 'Send Verification Code'}
+            </Button>
+          </motion.div>
+        );
+      }
+
       return (
-        <motion.div key="password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+        <motion.div key="password-reset" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+          <GlassmorphicCard gradient>
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                <Mail className="w-7 h-7 text-primary" />
+              </div>
+              <p className="text-sm text-muted-foreground">Code sent to</p>
+              <p className="text-sm font-medium">{user.email}</p>
+            </div>
+          </GlassmorphicCard>
+
           <GlassmorphicCard>
             <h3 className="font-medium mb-5 flex items-center gap-2">
-              <Key className="w-4 h-4 text-primary" /> Change Password
+              <Key className="w-4 h-4 text-primary" /> Set New Password
             </h3>
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Verification Code</Label>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={pwdOtp}
+                  onChange={e => setPwdOtp(e.target.value.replace(/\D/g, ''))}
+                  placeholder="000000"
+                  className="text-center tracking-[0.5em] bg-background/50 border-white/10 text-lg font-bold"
+                />
+              </div>
               {[
-                { label: 'Current Password', value: currentPwd, setter: setCurrentPwd, show: showCurrentPwd, setShow: setShowCurrentPwd },
                 { label: 'New Password', value: newPwd, setter: setNewPwd, show: showNewPwd, setShow: setShowNewPwd },
                 { label: 'Confirm New Password', value: confirmPwd, setter: setConfirmPwd, show: showNewPwd, setShow: setShowNewPwd },
               ].map(({ label, value, setter, show, setShow }) => (
@@ -259,9 +370,19 @@ export function SecurityScreen() {
               )}
             </div>
           </GlassmorphicCard>
+
           <Button onClick={handleChangePassword} disabled={pwdLoading} className="w-full bg-primary hover:bg-primary/90 text-white rounded-2xl h-12 shadow-lg shadow-primary/30">
-            {pwdLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Changing...</> : 'Change Password'}
+            {pwdLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Changing…</> : 'Change Password'}
           </Button>
+
+          <div className="text-center space-y-2">
+            {pwdResendCountdown > 0 ? (
+              <p className="text-xs text-muted-foreground">Resend in {pwdResendCountdown}s</p>
+            ) : (
+              <button onClick={handleResendPasswordOTP} className="text-sm text-primary hover:underline">Resend code</button>
+            )}
+            <button onClick={resetPasswordSection} className="block w-full text-sm text-muted-foreground hover:text-foreground">← Back</button>
+          </div>
         </motion.div>
       );
     }
@@ -377,15 +498,22 @@ export function SecurityScreen() {
 
     if (activeSection === 'change-email') {
       const handleInitiateEmailChange = async () => {
-        if (!currentEmailPwd) { toast.error('Enter your current password'); return; }
-        if (!/\S+@\S+\.\S+/.test(newEmail)) { toast.error('Enter a valid email address'); return; }
+        if (!oldEmail.trim()) { toast.error('Enter your old email address'); return; }
+        if (oldEmail.toLowerCase() !== user.email.toLowerCase()) {
+          toast.error('Old email does not match your account');
+          return;
+        }
+        if (!/\S+@\S+\.\S+/.test(newEmail)) { toast.error('Enter a valid new email address'); return; }
+        if (oldEmail.toLowerCase() === newEmail.toLowerCase()) {
+          toast.error('New email must be different from old email');
+          return;
+        }
         setEmailLoading(true);
         await new Promise(r => setTimeout(r, 800));
-        // In production: POST /change-email/initiate  { currentPassword, newEmail }
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         sessionStorage.setItem(CHANGE_EMAIL_OTP_KEY, otp);
         console.info(`[DEV] Change email OTP: ${otp}`);
-        toast.success(`Verification code sent to ${newEmail}`);
+        toast.success(`Verification code sent to ${oldEmail}`);
         setEmailLoading(false);
         setEmailStep('otp');
       };
@@ -394,14 +522,13 @@ export function SecurityScreen() {
         if (emailOtp.length !== 6) { toast.error('Enter 6-digit code'); return; }
         setEmailLoading(true);
         await new Promise(r => setTimeout(r, 600));
-        // In production: POST /change-email/verify  { otp }
         const stored = sessionStorage.getItem(CHANGE_EMAIL_OTP_KEY);
         if (emailOtp !== stored) { toast.error('Invalid code'); setEmailLoading(false); return; }
         sessionStorage.removeItem(CHANGE_EMAIL_OTP_KEY);
         toast.success('Email updated successfully');
         setEmailLoading(false);
         setEmailStep('form');
-        setCurrentEmailPwd(''); setNewEmail(''); setEmailOtp('');
+        setOldEmail(''); setNewEmail(''); setEmailOtp('');
         setActiveSection('menu');
       };
 
@@ -414,10 +541,16 @@ export function SecurityScreen() {
               </h3>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Current Password</Label>
+                  <Label className="text-sm text-muted-foreground">Old Email Address</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input type="password" value={currentEmailPwd} onChange={e => setCurrentEmailPwd(e.target.value)} placeholder="••••••••" className="pl-10 bg-background/50 border-white/10" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      value={oldEmail}
+                      onChange={e => setOldEmail(e.target.value)}
+                      placeholder={user.email}
+                      className="pl-10 bg-background/50 border-white/10"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -435,9 +568,11 @@ export function SecurityScreen() {
           ) : (
             <GlassmorphicCard>
               <h3 className="font-medium mb-5 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-teal-400" /> Verify New Email
+                <Mail className="w-4 h-4 text-teal-400" /> Verify Email Change
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">Enter the code sent to <span className="text-foreground font-medium">{newEmail}</span></p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Enter the code sent to <span className="text-foreground font-medium">{oldEmail}</span>
+              </p>
               <Input
                 type="text" inputMode="numeric" maxLength={6}
                 value={emailOtp} onChange={e => setEmailOtp(e.target.value.replace(/\D/g, ''))}
@@ -453,41 +588,22 @@ export function SecurityScreen() {
         </motion.div>
       );
     }
+  };
 
-    if (activeSection === 'activity') {
-      const statusIcon = (s: ActivityLog['status']) =>
-        s === 'success' ? <CheckCircle className="w-4 h-4 text-green-400" />
-          : s === 'failed' ? <XCircle className="w-4 h-4 text-destructive" />
-          : <AlertTriangle className="w-4 h-4 text-yellow-400" />;
-
-      return (
-        <motion.div key="activity" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-3">
-          {activity.map(log => (
-            <GlassmorphicCard key={log.id} className="flex items-start gap-4">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                log.status === 'success' ? 'bg-green-400/10' : log.status === 'failed' ? 'bg-destructive/10' : 'bg-yellow-400/10'
-              }`}>
-                {statusIcon(log.status)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{log.action}</p>
-                <p className="text-xs text-muted-foreground">{log.device} · {log.ip}</p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(log.timestamp).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}
-                </p>
-              </div>
-              <span className={cn(
-                'text-xs px-2 py-1 rounded-full capitalize shrink-0',
-                log.status === 'success' && 'bg-green-400/10 text-green-400',
-                log.status === 'failed' && 'bg-destructive/10 text-destructive',
-                log.status === 'warning' && 'bg-yellow-400/10 text-yellow-400',
-              )}>
-                {log.status}
-              </span>
-            </GlassmorphicCard>
-          ))}
-        </motion.div>
-      );
+  const handleBack = () => {
+    if (activeSection === 'menu') {
+      navigate('/account');
+    } else if (activeSection === 'password') {
+      resetPasswordSection();
+      setActiveSection('menu');
+    } else if (activeSection === 'change-email') {
+      setEmailStep('form');
+      setOldEmail('');
+      setNewEmail('');
+      setEmailOtp('');
+      setActiveSection('menu');
+    } else {
+      setActiveSection('menu');
     }
   };
 
@@ -496,22 +612,15 @@ export function SecurityScreen() {
       <AnimatedBackground />
 
       <div className="relative z-10 px-6 py-8 max-w-2xl mx-auto lg:max-w-full lg:px-24">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
-            onClick={() => activeSection === 'menu' ? navigate('/account') : setActiveSection('menu')}
+            onClick={handleBack}
             className="w-10 h-10 rounded-full bg-card/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-card/80 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold">
-              {activeSection === 'menu' ? 'Security Settings' :
-               activeSection === 'password' ? 'Change Password' :
-               activeSection === 'change-email' ? 'Change Email' :
-               activeSection === 'otp' ? 'Email Verification' :
-               activeSection === 'sessions' ? 'Active Sessions' : 'Security Activity'}
-            </h1>
+            <h1 className="text-2xl font-bold">{sectionTitles[activeSection]}</h1>
             <p className="text-sm text-muted-foreground">Keep your account safe</p>
           </div>
         </div>

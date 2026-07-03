@@ -23,6 +23,15 @@ export const MOOD_SCORE: Record<MoodType, number> = {
   stressed: 1,
 };
 
+export const MOOD_META: Record<MoodType, { label: string; emoji: string; color: string }> = {
+  happy:    { label: 'Happy',    emoji: '😊', color: 'from-yellow-400 to-amber-500' },
+  calm:     { label: 'Calm',     emoji: '😌', color: 'from-teal-400 to-cyan-500' },
+  neutral:  { label: 'Neutral',  emoji: '😐', color: 'from-slate-400 to-gray-500' },
+  sad:      { label: 'Sad',      emoji: '😢', color: 'from-blue-400 to-indigo-500' },
+  anxious:  { label: 'Anxious',  emoji: '😰', color: 'from-orange-400 to-amber-500' },
+  stressed: { label: 'Stressed', emoji: '😤', color: 'from-red-400 to-rose-500' },
+};
+
 export interface MoodEntry {
   id: string;
   userId: string;

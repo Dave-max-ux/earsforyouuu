@@ -21,7 +21,6 @@ const MoodScreen = lazy(() => import('./screens/MoodScreen').then(m => ({ defaul
 const JournalScreen = lazy(() => import('./screens/JournalScreen').then(m => ({ default: m.JournalScreen })));
 const InsightsScreen = lazy(() => import('./screens/InsightsScreen').then(m => ({ default: m.InsightsScreen })));
 const SupportScreen = lazy(() => import('./screens/SupportScreen').then(m => ({ default: m.SupportScreen })));
-const SOSScreen = lazy(() => import('./screens/SOSScreen').then(m => ({ default: m.SOSScreen })));
 const ProfileScreen = lazy(() => import('./screens/ProfileScreen').then(m => ({ default: m.ProfileScreen })));
 const ChatScreen = lazy(() => import('./screens/ChatScreen').then(m => ({ default: m.ChatScreen })));
 
@@ -29,10 +28,8 @@ const ChatScreen = lazy(() => import('./screens/ChatScreen').then(m => ({ defaul
 const AccountScreen = lazy(() => import('./screens/account/AccountScreen').then(m => ({ default: m.AccountScreen })));
 const EditProfileScreen = lazy(() => import('./screens/account/EditProfileScreen').then(m => ({ default: m.EditProfileScreen })));
 const SecurityScreen = lazy(() => import('./screens/account/SecurityScreen').then(m => ({ default: m.SecurityScreen })));
-const PrivacyScreen = lazy(() => import('./screens/account/PrivacyScreen').then(m => ({ default: m.PrivacyScreen })));
 const NotificationSettingsScreen = lazy(() => import('./screens/account/NotificationSettingsScreen').then(m => ({ default: m.NotificationSettingsScreen })));
 const AppPreferencesScreen = lazy(() => import('./screens/account/AppPreferencesScreen').then(m => ({ default: m.AppPreferencesScreen })));
-const DataManagementScreen = lazy(() => import('./screens/account/DataManagementScreen').then(m => ({ default: m.DataManagementScreen })));
 
 // Admin
 const AdminLoginScreen = lazy(() => import('./screens/admin/AdminLoginScreen').then(m => ({ default: m.AdminLoginScreen })));
@@ -64,7 +61,7 @@ export const router = createBrowserRouter([
   { path: '/journal', element: <Lazy><JournalScreen /></Lazy> },
   { path: '/insights', element: <Lazy><InsightsScreen /></Lazy> },
   { path: '/support', element: <Lazy><SupportScreen /></Lazy> },
-  { path: '/sos', element: <Lazy><SOSScreen /></Lazy> },
+  { path: '/sos', element: <Lazy><SupportScreen /></Lazy> },
   { path: '/profile', element: <Lazy><ProfileScreen /></Lazy> },
   { path: '/chat', element: <Lazy><ChatScreen /></Lazy> },
 
@@ -72,10 +69,8 @@ export const router = createBrowserRouter([
   { path: '/account', element: <Lazy><AccountScreen /></Lazy> },
   { path: '/account/profile', element: <Lazy><EditProfileScreen /></Lazy> },
   { path: '/account/security', element: <Lazy><SecurityScreen /></Lazy> },
-  { path: '/account/privacy', element: <Lazy><PrivacyScreen /></Lazy> },
   { path: '/account/notifications', element: <Lazy><NotificationSettingsScreen /></Lazy> },
   { path: '/account/preferences', element: <Lazy><AppPreferencesScreen /></Lazy> },
-  { path: '/account/data', element: <Lazy><DataManagementScreen /></Lazy> },
 
   // ── Admin (protected) ──────────────────────────────────────────────────────
   { path: '/admin/login', element: <Lazy><AdminLoginScreen /></Lazy> },

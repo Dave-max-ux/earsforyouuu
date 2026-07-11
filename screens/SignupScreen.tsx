@@ -110,8 +110,6 @@ export function SignupScreen() {
     }
   };
 
-  
-
   const SegmentedOption = ({
     label, selected, onClick,
   }: { label: string; selected: boolean; onClick: () => void }) => (
@@ -136,7 +134,7 @@ export function SignupScreen() {
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-            <div className="flex flex-col items-center mb-8">
+          <div className="flex flex-col items-center mb-8">
             <EarsForYouLogo variant="mark" size="md" className="mb-4" />
             <h1 className="font-display text-2xl font-semibold tracking-tight">{t('signup_title')}</h1>
             <p className="text-muted-foreground mt-1.5 text-sm">{t('signup_step')} {step} {t('signup_of')} 2</p>
@@ -285,7 +283,6 @@ export function SignupScreen() {
                   </div>
                 </motion.div>
               )}
-
             </form>
           </GlassmorphicCard>
 

@@ -113,7 +113,9 @@ const translations = {
     home_journal: 'Journal',
     home_insights: 'Insights',
     home_support: 'Support',
-    home_sos: 'SOS',
+    home_mood_history: 'Mood History',
+    home_no_moods: 'No moods logged yet',
+    home_no_moods_desc: 'Start tracking how you feel each day',
 
     // ── Mood ──────────────────────────────────────────────────────────────
     mood_title: 'Mood Check-In',
@@ -174,7 +176,7 @@ const translations = {
     account_edit_profile: 'Edit Profile',
     account_edit_desc: 'Name, personal info',
     account_security: 'Security Settings',
-    account_security_desc: 'Password, sessions, activity log',
+    account_security_desc: 'Password, email, sessions',
     account_privacy: 'Privacy Settings',
     account_privacy_desc: 'Visibility, data sharing, and privacy settings',
     account_notifications: 'Notifications',
@@ -355,7 +357,9 @@ const translations = {
     home_journal: 'Journal',
     home_insights: 'Insights',
     home_support: 'Support',
-    home_sos: 'SOS',
+    home_mood_history: 'Mood History',
+    home_no_moods: 'You never log mood yet',
+    home_no_moods_desc: 'Start dey track how you dey feel every day',
 
     // ── Mood ──────────────────────────────────────────────────────────────
     mood_title: 'Mood Check-In',
@@ -416,7 +420,7 @@ const translations = {
     account_edit_profile: 'Edit Profile',
     account_edit_desc: 'Name, personal info',
     account_security: 'Security Settings',
-    account_security_desc: 'Password, sessions, activity log',
+    account_security_desc: 'Password, email, sessions',
     account_privacy: 'Privacy Settings',
     account_privacy_desc: 'Visibility, data sharing, and privacy settings',
     account_notifications: 'Notifications',

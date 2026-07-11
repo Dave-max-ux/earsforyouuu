@@ -2,16 +2,22 @@
  * AccountScreen - Central account management hub
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import {
-  User, Shield, Bell, Eye, Database, Settings,
-  ChevronRight, LogOut, ArrowLeft, Crown
+  User, Shield, Bell, Settings,
+  ChevronRight, LogOut, ArrowLeft, Trash2, AlertTriangle
 } from 'lucide-react';
 import { AnimatedBackground } from '../../components/AnimatedBackground';
 import { GlassmorphicCard } from '../../components/GlassmorphicCard';
 import { BottomNav } from '../../components/BottomNav';
+import { Button } from '../../components/ui/button';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '../../components/ui/alert-dialog';
 import { useApp } from '../../context/AppContext';
 import { AuthService } from '../../services/AuthService';
 import { toast } from 'sonner';
@@ -40,23 +46,15 @@ const menuGroups: { title: string; items: MenuItem[] }[] = [
     ],
   },
   {
-    title: 'Security & Privacy',
+    title: 'Security',
     items: [
       {
         icon: Shield,
         label: 'Security Settings',
-        description: 'Password, sessions, activity log',
+        description: 'Password, email, sessions',
         path: '/account/security',
         color: 'text-accent',
         bgColor: 'bg-accent/10',
-      },
-      {
-        icon: Eye,
-        label: 'Privacy Settings',
-        description: 'Visibility, data sharing, and privacy settings',
-        path: '/account/privacy',
-        color: 'text-teal-400',
-        bgColor: 'bg-teal-400/10',
       },
     ],
   },
@@ -81,30 +79,31 @@ const menuGroups: { title: string; items: MenuItem[] }[] = [
       },
     ],
   },
-  {
-    title: 'Data',
-    items: [
-      {
-        icon: Database,
-        label: 'Data Management',
-        description: 'Export, download, retention',
-        path: '/account/data',
-        color: 'text-green-400',
-        bgColor: 'bg-green-400/10',
-      },
-    ],
-  },
 ];
 
 export function AccountScreen() {
   const navigate = useNavigate();
-  const { user, setUser, isAdmin, t } = useApp();
+  const { user, setUser } = useApp();
+  const [deleting, setDeleting] = useState(false);
 
   const handleLogout = async () => {
     await AuthService.logout();
     setUser(null);
     toast.success('Logged out successfully');
     navigate('/login');
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await AuthService.deleteAccount();
+      setUser(null);
+      toast.success('Account deleted permanently');
+      navigate('/welcome');
+    } catch {
+      toast.error('Failed to delete account');
+      setDeleting(false);
+    }
   };
 
   if (!user) {
@@ -124,7 +123,6 @@ export function AccountScreen() {
       <AnimatedBackground />
 
       <div className="relative z-10 px-6 py-8 max-w-2xl mx-auto lg:max-w-full lg:px-24">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate('/profile')}
@@ -138,7 +136,6 @@ export function AccountScreen() {
           </div>
         </div>
 
-        {/* Profile Summary Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -169,7 +166,6 @@ export function AccountScreen() {
           </GlassmorphicCard>
         </motion.div>
 
-        {/* Menu Groups */}
         <div className="space-y-4">
           {menuGroups.map((group, gi) => (
             <motion.div
@@ -207,13 +203,54 @@ export function AccountScreen() {
             </motion.div>
           ))}
 
-          
+          {/* Danger Zone — Delete Account only */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+              Danger Zone
+            </p>
+            <GlassmorphicCard className="border-destructive/20">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertTriangle className="w-4 h-4 text-destructive" />
+                <p className="text-xs text-muted-foreground">Permanent actions that cannot be undone</p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start border-destructive/30 text-destructive hover:bg-destructive/10 rounded-2xl h-12">
+                    <Trash2 className="w-4 h-4 mr-3" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-card border-white/10">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-destructive">Delete Account?</AlertDialogTitle>
+                    <AlertDialogDescription className="text-muted-foreground">
+                      This is irreversible. All your data — moods, journals, settings — will be permanently erased.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      disabled={deleting}
+                      className="bg-destructive hover:bg-destructive/90"
+                    >
+                      {deleting ? 'Deleting...' : 'Delete Account'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </GlassmorphicCard>
+          </motion.div>
 
           {/* Logout */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.35 }}
           >
             <GlassmorphicCard className="p-0 overflow-hidden">
               <button

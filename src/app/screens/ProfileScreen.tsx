@@ -2,18 +2,13 @@
  * ProfileScreen - User profile and settings with i18n
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, User, Globe, Moon, Sun, LogOut, Trash2, Shield, Settings } from 'lucide-react';
+import { ArrowLeft, User, Globe, Moon, Sun, LogOut, Shield, Settings } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Switch } from '../components/ui/switch';
 import { Label } from '../components/ui/label';
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-  AlertDialogTitle, AlertDialogTrigger,
-} from '../components/ui/alert-dialog';
 import { AnimatedBackground } from '../components/AnimatedBackground';
 import { GlassmorphicCard } from '../components/GlassmorphicCard';
 import { BottomNav } from '../components/BottomNav';
@@ -25,26 +20,12 @@ import { toast } from 'sonner';
 export function ProfileScreen() {
   const navigate = useNavigate();
   const { user, setUser, language, setLanguage, theme, toggleTheme, t } = useApp();
-  const [deleting, setDeleting] = useState(false);
 
   const handleLogout = async () => {
     await AuthService.logout();
     setUser(null);
     toast.success(t('success_logout'));
     navigate('/login');
-  };
-
-  const handleDeleteAccount = async () => {
-    setDeleting(true);
-    try {
-      await AuthService.deleteAccount();
-      setUser(null);
-      toast.success('Account deleted');
-      navigate('/welcome');
-    } catch {
-      toast.error(t('error_generic'));
-      setDeleting(false);
-    }
   };
 
   useEffect(() => {
@@ -151,26 +132,6 @@ export function ProfileScreen() {
                   <LogOut className="w-4 h-4 mr-2" />
                   {t('profile_logout')}
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start border-white/10 hover:border-destructive/50 text-destructive hover:text-destructive">
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      {t('profile_delete')}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="bg-card border-white/10">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t('profile_delete_confirm')}</AlertDialogTitle>
-                      <AlertDialogDescription className="text-muted-foreground">{t('profile_delete_desc')}</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAccount} disabled={deleting} className="bg-destructive hover:bg-destructive/90">
-                        {deleting ? t('profile_deleting') : t('profile_delete_btn')}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
               </div>
             </GlassmorphicCard>
           </motion.div>

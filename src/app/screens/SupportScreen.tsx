@@ -1,54 +1,35 @@
 /**
- * SupportScreen - Therapist directory and crisis support
+ * SupportScreen - Crisis support, breathing exercises, and helplines
  */
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, Phone, Mail, Globe, MessageCircle, Shield, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Phone, Heart, LifeBuoy } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
 import { AnimatedBackground } from '../components/AnimatedBackground';
 import { GlassmorphicCard } from '../components/GlassmorphicCard';
 import { BottomNav } from '../components/BottomNav';
-import { TherapistService, Therapist } from '../services/TherapistService';
-import { Skeleton } from '../components/ui/skeleton';
+import { BreathingAnimation } from '../components/BreathingAnimation';
+import { TherapistService } from '../services/TherapistService';
 
 export function SupportScreen() {
   const navigate = useNavigate();
-  const [therapists, setTherapists] = useState<Therapist[]>([]);
-  const [loading, setLoading] = useState(true);
   const crisisResources = TherapistService.getCrisisResources();
 
-  useEffect(() => {
-    loadTherapists();
-  }, []);
-
-  const loadTherapists = async () => {
-    setLoading(true);
-    const data = await TherapistService.getTherapists();
-    setTherapists(data);
-    setLoading(false);
-  };
-
-  const handleContact = (type: string, value: string) => {
-    if (type === 'whatsapp') {
-      window.open(`https://wa.me/${value.replace(/\D/g, '')}`, '_blank');
-    } else if (type === 'phone') {
-      window.location.href = `tel:${value}`;
-    } else if (type === 'email') {
-      window.location.href = `mailto:${value}`;
-    } else if (type === 'website') {
-      window.open(value, '_blank');
-    }
-  };
+  const groundingExercises = [
+    '5 things you can see',
+    '4 things you can touch',
+    '3 things you can hear',
+    '2 things you can smell',
+    '1 thing you can taste',
+  ];
 
   return (
     <div className="relative min-h-screen app-bg-gradient pb-24">
       <AnimatedBackground />
 
-      <div className="relative z-10 px-6 py-8 max-w-4xl mx-auto">
-        {/* Header */}
+      <div className="relative z-10 px-6 py-8 max-w-2xl mx-auto lg:max-w-full lg:px-24">
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate('/home')}
@@ -58,170 +39,113 @@ export function SupportScreen() {
           </button>
           <div>
             <h1 className="text-2xl font-bold">Support</h1>
-            <p className="text-sm text-muted-foreground">Connect with professionals</p>
+            <p className="text-sm text-muted-foreground">Help when you need it most</p>
           </div>
         </div>
 
         <div className="space-y-6">
-          {/* Crisis Support Banner */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            className="text-center"
           >
-            <GlassmorphicCard className="bg-gradient-to-br from-destructive/20 to-transparent border-destructive/30">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-6 h-6 text-destructive shrink-0" />
-                <div className="flex-1">
-                  <h3 className="font-medium mb-2">In Crisis?</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    If you're having thoughts of self-harm, please reach out immediately.
-                  </p>
-                  <Button
-                    onClick={() => navigate('/sos')}
-                    variant="destructive"
-                    className="w-full sm:w-auto"
-                  >
-                    Get Help Now
-                  </Button>
-                </div>
-              </div>
-            </GlassmorphicCard>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <LifeBuoy className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">You&apos;re Not Alone</h2>
+            <p className="text-muted-foreground">
+              Take a deep breath. We&apos;re here for you.
+            </p>
           </motion.div>
 
-          {/* Hotlines */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <GlassmorphicCard>
-              <h3 className="font-medium mb-4 flex items-center gap-2">
-                <Phone className="w-5 h-5 text-accent" />
-                24/7 Helplines
-              </h3>
-              <div className="space-y-3">
-                {crisisResources.map((resource, index) => (
-                  <div
-                    key={index}
-                    className="p-4 rounded-xl bg-card/40 border border-white/10 hover:border-accent/50 transition-all cursor-pointer"
-                    onClick={() => handleContact('phone', resource.number)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-medium">{resource.name}</h4>
-                        <p className="text-sm text-muted-foreground">{resource.description}</p>
-                      </div>
-                      <Badge variant="outline" className="shrink-0">
-                        {resource.number}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <GlassmorphicCard className="bg-gradient-to-br from-accent/10 to-transparent border-accent/20">
+              <h3 className="text-center font-medium mb-1">Calm Your Mind</h3>
+              <p className="text-center text-sm text-muted-foreground mb-4">
+                Follow the breathing exercise below
+              </p>
+              <BreathingAnimation />
             </GlassmorphicCard>
           </motion.div>
 
-          {/* Therapists */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
             <GlassmorphicCard>
-              <h3 className="font-medium mb-4">Professional Therapists</h3>
-
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-48 w-full rounded-xl" />
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {therapists.map((therapist) => (
-                    <div
-                      key={therapist.id}
-                      className="p-4 rounded-xl bg-card/40 border border-white/10 hover:border-primary/50 transition-all"
-                    >
-                      <div className="flex items-start gap-3 mb-3">
-                        <img
-                          src={therapist.image}
-                          alt={therapist.name}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium">{therapist.name}</h4>
-                            {therapist.verified && (
-                              <Shield className="w-4 h-4 text-accent" />
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {therapist.bio}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {therapist.specialty.map((spec, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {spec}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {therapist.whatsapp && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleContact('whatsapp', therapist.whatsapp!)}
-                            className="text-xs"
-                          >
-                            <MessageCircle className="w-3 h-3 mr-1" />
-                            WhatsApp
-                          </Button>
-                        )}
-                        {therapist.phone && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleContact('phone', therapist.phone!)}
-                            className="text-xs"
-                          >
-                            <Phone className="w-3 h-3 mr-1" />
-                            Call
-                          </Button>
-                        )}
-                        {therapist.email && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleContact('email', therapist.email!)}
-                            className="text-xs"
-                          >
-                            <Mail className="w-3 h-3 mr-1" />
-                            Email
-                          </Button>
-                        )}
-                        {therapist.website && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleContact('website', therapist.website!)}
-                            className="text-xs"
-                          >
-                            <Globe className="w-3 h-3 mr-1" />
-                            Website
-                          </Button>
-                        )}
-                      </div>
+              <h3 className="font-medium mb-4 flex items-center gap-2">
+                <Heart className="w-5 h-5 text-accent" />
+                5-4-3-2-1 Grounding Exercise
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Notice these things around you to feel present:
+              </p>
+              <ul className="space-y-2">
+                {groundingExercises.map((exercise, index) => (
+                  <li
+                    key={index}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-white/10"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent font-medium shrink-0">
+                      {5 - index}
                     </div>
-                  ))}
-                </div>
-              )}
+                    <span className="text-sm">{exercise}</span>
+                  </li>
+                ))}
+              </ul>
             </GlassmorphicCard>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <GlassmorphicCard className="bg-gradient-to-br from-destructive/10 to-transparent border-destructive/20">
+              <h3 className="font-medium mb-4 flex items-center gap-2">
+                <Phone className="w-5 h-5 text-destructive" />
+                Get Immediate Help
+              </h3>
+              <div className="space-y-3">
+                {crisisResources.map((resource, index) => (
+                  <a
+                    key={index}
+                    href={`tel:${resource.number}`}
+                    className="block"
+                  >
+                    <div className="p-4 rounded-xl bg-card/60 border border-destructive/20 hover:border-destructive/40 transition-all">
+                      <div className="flex justify-between items-center gap-4">
+                        <div>
+                          <h4 className="font-medium">{resource.name}</h4>
+                          <p className="text-sm text-muted-foreground">{resource.description}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="text-sm font-medium tabular-nums">{resource.number}</div>
+                          <Button size="sm" variant="destructive" className="mt-2">
+                            Call Now
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </GlassmorphicCard>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-center text-sm text-muted-foreground py-2"
+          >
+            You matter. Your feelings are valid. This moment will pass.
+          </motion.p>
         </div>
       </div>
 

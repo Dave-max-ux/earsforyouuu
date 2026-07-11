@@ -112,7 +112,7 @@ export function EditProfileScreen() {
                     <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="How others see your name" className="pl-10 bg-background/50 border-white/10" />
                   </div>
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Email Address</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -124,6 +124,7 @@ export function EditProfileScreen() {
                   </div>
                 </div>
               </div>
+              */}
             </GlassmorphicCard>
             <Button onClick={handleSave} disabled={saving} className="w-full bg-primary hover:bg-primary/90 text-white rounded-2xl h-12 shadow-lg shadow-primary/30">
               {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('saving')}</> : t('save')}

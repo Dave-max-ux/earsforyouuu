@@ -57,7 +57,7 @@ export function ProfileScreen() {
                 <User className="w-9 h-9 text-primary" strokeWidth={1.75} />
               </div>
               <h2 className="text-xl font-bold mb-1">{user.fullName}</h2>
-              <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
+
               {user.generation && (
                 <p className="text-xs text-accent mb-3">{GENERATION_LABELS[user.generation]}</p>
               )}

@@ -23,7 +23,7 @@ export function EditProfileScreen() {
 
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [displayName, setDisplayName] = useState(user?.fullName?.split(' ')[0] || '');
-  const [email, setEmail] = useState(user?.email || '');
+
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'details'>('profile');
 
@@ -39,7 +39,7 @@ export function EditProfileScreen() {
     if (!fullName.trim()) { toast.error(t('error_required')); return; }
     setSaving(true);
     try {
-      const result = await AccountService.updateProfile({ fullName: fullName.trim(), email });
+      const result = await AccountService.updateProfile({ fullName: fullName.trim(), });
       if (result.success && result.user) {
         setUser(result.user);
         toast.success(t('success_profile_updated'));

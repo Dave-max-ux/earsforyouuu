@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, User, Mail, Pencil, Shield, Calendar, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Pencil, Calendar, Loader2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -112,19 +112,7 @@ export function EditProfileScreen() {
                     <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="How others see your name" className="pl-10 bg-background/50 border-white/10" />
                   </div>
                 </div>
-                {/* <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="pl-10 bg-background/50 border-white/10" />
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Shield className="w-3.5 h-3.5 text-green-400" />
-                    <span className="text-xs text-green-400">Email verified</span>
-                  </div>
-                </div>
               </div>
-              */}
             </GlassmorphicCard>
             <Button onClick={handleSave} disabled={saving} className="w-full bg-primary hover:bg-primary/90 text-white rounded-2xl h-12 shadow-lg shadow-primary/30">
               {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('saving')}</> : t('save')}

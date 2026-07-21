@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowLeft, User, Mail, Pencil, Shield, Calendar, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Pencil, Calendar, Loader2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -23,7 +23,6 @@ export function EditProfileScreen() {
 
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [displayName, setDisplayName] = useState(user?.fullName?.split(' ')[0] || '');
-  const [email, setEmail] = useState(user?.email || '');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'details'>('profile');
 
@@ -39,7 +38,7 @@ export function EditProfileScreen() {
     if (!fullName.trim()) { toast.error(t('error_required')); return; }
     setSaving(true);
     try {
-      const result = await AccountService.updateProfile({ fullName: fullName.trim(), email });
+      const result = await AccountService.updateProfile({ fullName: fullName.trim() });
       if (result.success && result.user) {
         setUser(result.user);
         toast.success(t('success_profile_updated'));
@@ -68,7 +67,7 @@ export function EditProfileScreen() {
       <div className="relative z-10 px-6 py-8 max-w-2xl mx-auto lg:max-w-full lg:px-24">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => navigate('/account')} className="w-10 h-10 rounded-full bg-card/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-card/80 transition-all">
+          <button onClick={() => navigate('/account')} className="w-10 h-10 rounded-full bg-card/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-card/80 hover:scale-105 active:scale-95 transition-all duration-200">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
@@ -88,7 +87,7 @@ export function EditProfileScreen() {
         {/* Tab Bar */}
         <div className="flex gap-2 mb-6 p-1 rounded-2xl bg-card/40 backdrop-blur-xl border border-white/10">
           {(['profile', 'details'] as const).map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-muted-foreground hover:text-foreground'}`}>
+            <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${activeTab === tab ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-card/40'}`}>
               {tab === 'profile' ? 'Edit Info' : 'Account Details'}
             </button>
           ))}
@@ -102,25 +101,14 @@ export function EditProfileScreen() {
                   <Label className="text-sm text-muted-foreground">Full Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" className="pl-10 bg-background/50 border-white/10" />
+                    <Input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" className="pl-10 bg-background/50 border-white/10 ef-input-hover" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Display Name</Label>
                   <div className="relative">
                     <Pencil className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="How others see your name" className="pl-10 bg-background/50 border-white/10" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm text-muted-foreground">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="pl-10 bg-background/50 border-white/10" />
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Shield className="w-3.5 h-3.5 text-green-400" />
-                    <span className="text-xs text-green-400">Email verified</span>
+                    <Input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="How others see your name" className="pl-10 bg-background/50 border-white/10 ef-input-hover" />
                   </div>
                 </div>
               </div>

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import {
   Heart, TrendingUp, Flame, BookOpen, LifeBuoy, BarChart3,
-  Clock, Battery, ChevronRight, CalendarDays
+  Clock, ChevronRight, CalendarDays
 } from 'lucide-react';
 import { Skeleton } from '../components/ui/skeleton';
 import { Button } from '../components/ui/button';
@@ -17,7 +17,7 @@ import { GlassmorphicCard } from '../components/GlassmorphicCard';
 import { BottomNav } from '../components/BottomNav';
 import { EarsForYouLogo } from '../components/EarsForYouLogo';
 import { useApp } from '../context/AppContext';
-import { MoodService, MoodStats, MoodEntry, MOOD_META } from '../services/MoodService';
+import { MoodService, MoodStats, MoodEntry, MOOD_META, MoodType } from '../services/MoodService';
 import { InsightService } from '../services/InsightService';
 
 function formatMoodDate(iso: string): string {
@@ -168,7 +168,7 @@ export function HomeScreen() {
                         initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.02 * i }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border hover:border-primary/20 transition-colors"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border ef-interactive hover:bg-card/80 hover:shadow-sm"
                       >
                         <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${meta.color} flex items-center justify-center text-xl shrink-0 shadow-sm`}>
                           {meta.emoji}
@@ -192,30 +192,46 @@ export function HomeScreen() {
             </GlassmorphicCard>
           </motion.div>
 
-          {/* Recent Patterns */}
+          {/* Recent Patterns — all moods */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
             <GlassmorphicCard>
               <h3 className="font-medium mb-4 flex items-center gap-2 text-sm">
                 <Clock className="w-4 h-4 text-muted-foreground" /> {t('home_recent_patterns')}
               </h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">{t('home_stress_level')}</span>
-                    <span className="font-medium tabular-nums">{stats?.averageStress ? Math.round(stats.averageStress) : 0}/10</span>
-                  </div>
-                  <Progress value={(stats?.averageStress || 0) * 10} className="h-1.5 bg-muted" />
+              {loading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-8 w-full rounded-lg" />)}
                 </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground flex items-center gap-1">
-                      <Battery className="w-3.5 h-3.5" /> {t('home_energy_level')}
-                    </span>
-                    <span className="font-medium tabular-nums">{stats?.averageEnergy ? Math.round(stats.averageEnergy) : 0}/10</span>
-                  </div>
-                  <Progress value={(stats?.averageEnergy || 0) * 10} className="h-1.5 bg-muted" />
+              ) : (stats?.totalEntries ?? 0) === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">{t('home_no_moods_desc')}</p>
+              ) : (
+                <div className="space-y-3">
+                  {(Object.keys(MOOD_META) as MoodType[]).map((mood, i) => {
+                    const meta = MOOD_META[mood];
+                    const count = stats?.moodDistribution[mood] ?? 0;
+                    const total = stats?.totalEntries ?? 1;
+                    const pct = total > 0 ? (count / total) * 100 : 0;
+                    return (
+                      <motion.div
+                        key={mood}
+                        initial={{ opacity: 0, x: -6 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.03 * i }}
+                        className="group"
+                      >
+                        <div className="flex justify-between items-center text-sm mb-1.5">
+                          <span className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                            <span className="text-base leading-none">{meta.emoji}</span>
+                            <span className="font-medium">{meta.label}</span>
+                          </span>
+                          <span className="font-semibold tabular-nums text-foreground/80">{count}</span>
+                        </div>
+                        <Progress value={pct} className="h-2 bg-muted group-hover:h-2.5 transition-all duration-300" />
+                      </motion.div>
+                    );
+                  })}
                 </div>
-              </div>
+              )}
             </GlassmorphicCard>
           </motion.div>
 
@@ -233,7 +249,7 @@ export function HomeScreen() {
                     key={item.path}
                     variant="outline"
                     onClick={() => navigate(item.path)}
-                    className="h-auto py-4 flex-col gap-2 border-border rounded-xl hover:bg-secondary/60 hover:border-primary/20"
+                    className="h-auto py-4 flex-col gap-2 border-border rounded-xl ef-interactive hover:bg-secondary/60 hover:border-primary/30 hover:shadow-md"
                   >
                     <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
                       <item.Icon className="w-4 h-4 text-primary" strokeWidth={1.75} />

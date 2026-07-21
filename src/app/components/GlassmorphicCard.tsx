@@ -1,5 +1,5 @@
 /**
- * GlassmorphicCard — refined surface card
+ * GlassmorphicCard — refined surface card with hover animations
  */
 
 import React, { ReactNode } from 'react';
@@ -23,12 +23,13 @@ export function GlassmorphicCard({
   return (
     <div
       className={cn(
-        'relative rounded-2xl p-6 transition-all duration-200',
+        'relative rounded-2xl p-6 transition-all duration-300 ease-out',
         'bg-card border border-border',
-        gradient && 'bg-gradient-to-br from-[rgba(61,139,122,0.04)] via-transparent to-transparent',
+        gradient && 'bg-gradient-to-br from-[rgba(61,139,122,0.06)] via-transparent to-transparent',
         glow && 'shadow-md dark:shadow-lg dark:shadow-black/20',
         !glow && 'shadow-sm',
-        onClick && 'cursor-pointer hover:shadow-md hover:border-primary/20 active:scale-[0.99]',
+        'hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/25',
+        onClick && 'cursor-pointer active:scale-[0.98] active:translate-y-0',
         className
       )}
       onClick={onClick}
